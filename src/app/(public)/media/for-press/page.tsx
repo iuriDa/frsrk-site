@@ -1,0 +1,3 @@
+import { BriefcaseBusiness } from "lucide-react";
+import { ContentPage } from "@/components/ui/content-page";
+export default function Page() { return <ContentPage eyebrow="Черновик" title="Для СМИ" description="Служебный раздел для журналистов и партнёров. Не выводится в основном меню до утверждения материалов." trail={[{label:"Медиа",href:"/media"},{label:"Для СМИ"}]} icon={BriefcaseBusiness} items={["Официальный логотип", "Правила использования", "Пресс-фотографии", "Краткая справка", "Пресс-релизы", "Контакты для журналистов"]} note="Страница находится в статусе draft и должна быть скрыта из публичной навигации до утверждения бренд-материалов." />; }

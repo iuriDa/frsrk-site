@@ -1,0 +1,133 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-07-09T12:31:44Z",
+  "title": "Design System: ФРСРК",
+  "extensions": {
+    "colorMeta": {
+      "navy-950": { "role": "primary-dark", "displayName": "Глубокая гавань", "canonical": "#071426", "tonalRamp": ["#0c2241", "#14396c", "#1c4f97", "#2466c2", "#4a88de", "#7eaae7", "#b6cff2", "#e9f1fb"] },
+      "navy-900": { "role": "primary-dark", "displayName": "Тёмная гавань", "canonical": "#0b1f3a", "tonalRamp": ["#0c2240", "#14396b", "#1c5096", "#2567c1", "#4b89dd", "#7eabe7", "#b6cff1", "#eaf1fb"] },
+      "blue-700": { "role": "primary", "displayName": "Федеральный синий", "canonical": "#1454a3", "tonalRamp": ["#082344", "#0e3b72", "#14529f", "#1969cc", "#408be8", "#77acee", "#b2d0f6", "#e8f1fc"] },
+      "blue-500": { "role": "primary-hover", "displayName": "Светлый федеральный синий", "canonical": "#2878d0", "tonalRamp": ["#0c2540", "#153e6b", "#1d5696", "#256fc0", "#4b90dc", "#7fb0e6", "#b6d2f1", "#eaf2fb"] },
+      "red-700": { "role": "accent", "displayName": "Приглушённый красный", "canonical": "#b91c2b", "tonalRamp": ["#420a0f", "#6f111a", "#9b1724", "#c71e2e", "#e34554", "#eb7a85", "#f4b4ba", "#fce9eb"] },
+      "red-500": { "role": "accent-hover", "displayName": "Светлый красный", "canonical": "#d52b3a", "tonalRamp": ["#400d11", "#6a151d", "#951e28", "#c02634", "#dc4c59", "#e67f88", "#f1b7bc", "#fbeaeb"] },
+      "gold": { "role": "tertiary-reserved", "displayName": "Тёмное золото (резерв)", "canonical": "#c99a36", "tonalRamp": ["#3c2e10", "#654d1b", "#8d6c26", "#b58b31", "#d2aa56", "#dfc286", "#edddbb", "#faf5eb"] },
+      "gold-light": { "role": "tertiary", "displayName": "Медальное золото", "canonical": "#f5cc73", "tonalRamp": ["#473205", "#775408", "#a7760c", "#d6970f", "#f1b637", "#f5cb70", "#f9e2ae", "#fdf6e7"] },
+      "crimea-blue": { "role": "flag-only", "displayName": "Флаговый голубой", "canonical": "#0d5db8", "tonalRamp": ["#052447", "#083c77", "#0c54a7", "#0f6cd6", "#378ef1", "#70aef5", "#aed1f9", "#e7f2fd"] },
+      "crimea-red": { "role": "flag-only", "displayName": "Флаговый красный", "canonical": "#d20f2d", "tonalRamp": ["#47050f", "#77081a", "#a70c24", "#d60f2e", "#f13754", "#f57085", "#f9aeba", "#fde7eb"] },
+      "surface": { "role": "neutral-bg", "displayName": "Белый", "canonical": "#ffffff", "tonalRamp": [] },
+      "surface-muted": { "role": "neutral-bg-muted", "displayName": "Туманная дымка", "canonical": "#f4f7fa", "tonalRamp": [] },
+      "border": { "role": "neutral-border", "displayName": "Ледяная граница", "canonical": "#dde4ec", "tonalRamp": [] },
+      "text": { "role": "neutral-text", "displayName": "Графит", "canonical": "#101828", "tonalRamp": [] },
+      "text-muted": { "role": "neutral-text-muted", "displayName": "Приглушённый сланец", "canonical": "#596579", "tonalRamp": [] }
+    },
+    "typographyMeta": {
+      "display": { "displayName": "Display", "purpose": "Заголовок Hero на главной странице (HalideTopoHero)." },
+      "headline": { "displayName": "Headline", "purpose": "Заголовки секций (SectionHeading), H1 подстраниц (PageHero)." },
+      "title": { "displayName": "Title", "purpose": "Заголовки карточек (InfoCard, EventCard) и aside-панелей." },
+      "body": { "displayName": "Body", "purpose": "Основной текст, описания, параграфы." },
+      "label": { "displayName": "Label", "purpose": "Десктоп-навигация (9px), eyebrow-подписи, статус-чипы, футер-заголовки." }
+    },
+    "shadows": [
+      { "name": "card-shadow", "value": "0 20px 55px rgba(7,20,38,0.09)", "purpose": "Базовая утилита мягкой тени, применяется точечно." },
+      { "name": "card-hover", "value": "0 24px 70px rgba(7,20,38,0.11)", "purpose": "Тень на hover для InfoCard/EventCard вместе с translateY(-1px) и border → blue-500." },
+      { "name": "sticky-nav", "value": "0 8px 24px rgba(7,20,38,0.18)", "purpose": "Единственная тень в состоянии покоя — под sticky-навигацией на navy-900." },
+      { "name": "dropdown", "value": "shadow-2xl shadow-black/25 (Tailwind, ≈0 25px 50px rgba(0,0,0,0.25))", "purpose": "Выпадающее меню десктоп-навигации — самая тяжёлая тень в системе." }
+    ],
+    "motion": [
+      { "name": "transition-default", "value": "all 150ms ease", "purpose": "Стандартный переход для hover-состояний ссылок, кнопок, границ карточек." },
+      { "name": "transition-logo", "value": "transform 180ms ease", "purpose": "Лёгкий scale(1.025) логотипа в шапке на hover." },
+      { "name": "transition-dropdown", "value": "all 150ms ease (opacity + translateY(0.5rem → 0))", "purpose": "Появление выпадающего меню десктоп-навигации." },
+      { "name": "reduced-motion-override", "value": "animation-duration: 0.01ms !important; transition-duration: 0.01ms !important", "purpose": "Обязательный override в @media (prefers-reduced-motion: reduce), уже реализован в globals.css." }
+    ],
+    "breakpoints": [
+      { "name": "sm", "value": "640px" },
+      { "name": "md", "value": "768px" },
+      { "name": "lg", "value": "1024px" },
+      { "name": "xl", "value": "1280px" }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "Основная кнопка действия — заявки, переходы к разделам.",
+      "html": "<a href=\"#\" class=\"ds-btn-primary\">Подать заявку<svg class=\"ds-btn-icon\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\"><path d=\"M5 12h14M13 6l6 6-6 6\"/></svg></a>",
+      "css": ".ds-btn-primary { display: inline-flex; align-items: center; gap: 8px; min-height: 44px; padding: 0 20px; border-radius: 12px; background: #1454a3; color: #ffffff; font-weight: 800; font-size: 14px; transition: background 150ms ease; } .ds-btn-primary:hover { background: #0b1f3a; } .ds-btn-primary:focus-visible { outline: 3px solid color-mix(in srgb, #2878d0 75%, white); outline-offset: 3px; } .ds-btn-icon { width: 17px; height: 17px; }"
+    },
+    {
+      "name": "Info Card",
+      "kind": "card",
+      "refersTo": "card-hover",
+      "description": "Карточка-ссылка на раздел (главная страница, разделы-обзоры).",
+      "html": "<a href=\"#\" class=\"ds-card\"><span class=\"ds-card-icon\"><svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" width=\"24\" height=\"24\"><circle cx=\"12\" cy=\"12\" r=\"9\"/></svg></span><h3 class=\"ds-card-title\">Календарь</h3><p class=\"ds-card-text\">Соревнования, семинары и сборы федерации.</p><span class=\"ds-card-link\">Подробнее<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" width=\"17\" height=\"17\"><path d=\"M7 17 17 7M7 7h10v10\"/></svg></span></a>",
+      "css": ".ds-card { display: flex; flex-direction: column; min-height: 256px; border-radius: 26px; border: 1px solid #dde4ec; background: #ffffff; padding: 28px; transition: transform 300ms ease, border-color 300ms ease, box-shadow 300ms ease; text-decoration: none; } .ds-card:hover { transform: translateY(-4px); border-color: #2878d0; box-shadow: 0 24px 70px rgba(7,20,38,0.11); } .ds-card-icon { display: grid; place-items: center; width: 48px; height: 48px; border-radius: 16px; background: #eaf2fb; color: #1454a3; } .ds-card:hover .ds-card-icon { background: #1454a3; color: #ffffff; } .ds-card-title { margin-top: 32px; font-size: 20px; font-weight: 800; letter-spacing: -0.025em; color: #071426; } .ds-card-text { margin-top: 12px; flex: 1; font-size: 14px; line-height: 1.75; color: #596579; } .ds-card-link { margin-top: 24px; display: inline-flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 800; color: #1454a3; }"
+    },
+    {
+      "name": "Status Chip",
+      "kind": "chip",
+      "refersTo": "chip",
+      "description": "Статус мероприятия или документа (открыта регистрация, завершено и т.д.).",
+      "html": "<span class=\"ds-chip ds-chip--open\">Приём заявок</span>",
+      "css": ".ds-chip { display: inline-flex; align-items: center; border-radius: 9999px; padding: 4px 12px; font-size: 12px; font-weight: 800; border: 1px solid transparent; } .ds-chip--open { background: #ecfdf5; color: #065f46; border-color: #a7f3d0; } .ds-chip--soon { background: #eff6ff; color: #1e40af; border-color: #bfdbfe; } .ds-chip--live { background: #fef2f2; color: #991b1b; border-color: #fecaca; }"
+    },
+    {
+      "name": "Search Input",
+      "kind": "input",
+      "refersTo": "input",
+      "description": "Поле поиска в фильтрах календаря и муниципалитетов.",
+      "html": "<label class=\"ds-field\"><svg class=\"ds-field-icon\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" width=\"19\" height=\"19\"><circle cx=\"11\" cy=\"11\" r=\"7\"/><path d=\"m21 21-4.3-4.3\"/></svg><input class=\"ds-field-input\" placeholder=\"Название, город или ключевое слово\"/></label>",
+      "css": ".ds-field { position: relative; display: block; } .ds-field-icon { position: absolute; left: 16px; top: 50%; transform: translateY(-50%); color: #596579; pointer-events: none; } .ds-field-input { min-height: 48px; width: 100%; border-radius: 12px; border: 1px solid #dde4ec; background: #ffffff; padding: 0 16px 0 48px; font-size: 14px; color: #101828; } .ds-field-input::placeholder { color: #596579; } .ds-field-input:focus { border-color: #2878d0; outline: none; }"
+    },
+    {
+      "name": "Desktop Nav Item",
+      "kind": "nav",
+      "refersTo": "nav-item",
+      "description": "Пункт десктоп-меню в тёмной sticky-панели навигации.",
+      "html": "<a href=\"#\" class=\"ds-nav-item ds-nav-item--active\">Календарь</a>",
+      "css": ".ds-nav-item { position: relative; display: flex; align-items: center; justify-content: center; white-space: nowrap; padding: 0 10px; height: 56px; font-size: 9px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.055em; color: #ffffff; background: transparent; transition: background 150ms ease; } .ds-nav-item:hover { background: rgba(255,255,255,0.08); } .ds-nav-item--active { background: rgba(255,255,255,0.1); } .ds-nav-item--active::after { content: \"\"; position: absolute; left: 8px; right: 8px; bottom: 0; height: 2px; background: #d20f2d; }"
+    },
+    {
+      "name": "Flag Header",
+      "kind": "custom",
+      "refersTo": "flag-header",
+      "description": "Сигнатурный трёхполосный флаг-баннер шапки с логотипом поверх — единственное место в системе, где флаговые цвета выходят на передний план.",
+      "html": "<div class=\"ds-flag\"><div class=\"ds-flag__blue\"></div><div class=\"ds-flag__white\"><span class=\"ds-flag__title\">Федерация Роуп Скиппинга Республики Крым</span></div><div class=\"ds-flag__red\"></div><div class=\"ds-flag__logo\">FRSRK</div></div>",
+      "css": ".ds-flag { position: relative; } .ds-flag__blue { height: 20px; background: linear-gradient(180deg, #1268c7 0%, #0d5db8 100%); } .ds-flag__white { min-height: 42px; background: #ffffff; display: flex; align-items: center; padding-left: 158px; } .ds-flag__title { font-size: clamp(0.68rem, 1.22vw, 0.96rem); font-weight: 600; color: #071426; } .ds-flag__red { height: 36px; background: linear-gradient(180deg, #df1734 0%, #d20f2d 100%); } .ds-flag__logo { position: absolute; top: 50%; left: 24px; transform: translateY(-50%); width: 110px; height: 110px; display: grid; place-items: center; font-size: 10px; font-weight: 800; color: #071426; }"
+    }
+  ],
+  "narrative": {
+    "northStar": "Флаг и пьедестал",
+    "overview": "Система строится вокруг двух вещей: флага и пьедестала. Флаг — это crimea-blue и crimea-red, две ровные полосы над каждой страницей, дисциплинированные, без градиентных вольностей. Пьедестал — это navy-950/navy-900, тёмная институциональная база, на которой стоят герой-баннеры, шапка и футер; она несёт статус, а не декор. Энергичность спорта не выражается игривостью — она выражается в ритме: акцентный blue-700 работает как рабочая лошадка интерактивных элементов, gold-light (#f5cc73) — редкая вспышка отличия на тёмном фоне (eyebrow, ховер соцсетей), почти как медаль на груди. Система явно отвергает: карточные SaaS-лендинги с иконками-градиентами и eyebrow-конструкторами на каждой секции; тяжеловесный госпортал 2010-х с перегруженными таблицами; кустарный сайт районной федерации; игровую/детскую эстетику с декоративными анимациями.",
+    "keyCharacteristics": [
+      "Тёмно-синяя институциональная база (navy-950/navy-900) под герой-секциями, шапкой и футером",
+      "Один рабочий акцент — blue-700 — на ссылках, иконках, primary-кнопках, фокусе полей",
+      "gold-light (#f5cc73) как редкий сигнал отличия только на тёмном фоне, не более",
+      "Флаговые голубой/красный (crimea-blue/crimea-red) зарезервированы строго за шапкой",
+      "Крупная, чёрная (font-weight 800–850), плотно набранная типографика с отрицательным трекингом",
+      "Карточки плоские в покое, мягкая тень и подъём на 1px — только как реакция на наведение"
+    ],
+    "rules": [
+      { "name": "The Flag-Stays-in-the-Header Rule", "body": "crimea-blue и crimea-red появляются только в трёхполосной шапке. Акцент в теле страницы — это blue-700.", "section": "colors" },
+      { "name": "The One Gold Rule", "body": "gold-light выходит на сцену только на тёмном фоне и только как единичный сигнал — никогда заливка, никогда на светлом фоне.", "section": "colors" },
+      { "name": "The 9px Exception Rule", "body": "Кегль 9px разрешён только для десктопного меню шапки. Основной текст никогда не опускается ниже 14px.", "section": "typography" },
+      { "name": "The Rest-is-Flat Rule", "body": "Ничего не отбрасывает тень, пока по нему не наводят курсор или оно не является плавающим слоем (dropdown, sticky-nav).", "section": "elevation" }
+    ],
+    "dos": [
+      "Do использовать blue-700 (#1454a3) как единственный рабочий акцент интерактивности вне шапки.",
+      "Do держать карточки плоскими в покое; добавлять тень и -translate-y-1 только на hover.",
+      "Do использовать gold-light (#f5cc73) только на тёмном (navy) фоне, только как единичный сигнал.",
+      "Do держать флаговые crimea-blue/crimea-red строго в шапке.",
+      "Do сохранять 9px только для десктоп-меню — нигде больше в основном тексте.",
+      "Do заполнять пустые разделы через ContentPage/EmptyState, а не пустыми страницами или lorem ipsum."
+    ],
+    "donts": [
+      "Don't делать типичный SaaS-лендинг: карточки-иконки с градиентами, eyebrow-подпись над каждой секцией, шаблонная конструкторная вёрстка.",
+      "Don't воспроизводить госпортал 2010-х: тяжеловесные таблицы, перегруженный текст, бюрократичная плотность.",
+      "Don't скатываться в игровую/детскую эстетику: чрезмерные градиенты, декоративные анимации без функции, разноцветные акценты вне палитры.",
+      "Don't выглядеть как самодельный сайт районной федерации: небрежные отступы, случайные радиусы, непоследовательная типографика.",
+      "Don't использовать background-clip: text с градиентом или боковые цветные полосы (border-left/border-right) как акцент.",
+      "Don't добавлять тень карточке в состоянии покоя — тень только как ответ на действие."
+    ]
+  }
+}

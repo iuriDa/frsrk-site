@@ -1,0 +1,1076 @@
+<!DOCTYPE html>
+<!--
+  ============================================================================
+  © Данильченко Юрий Леонидович, 19.10.1989
+  Студия «Точка Отрыва» / Федерация роуп скиппинга Республики Крым (ФРСРК)
+  Telegram: @iuriletics  |  GitHub: iuriDa  |  iurida.github.io
+  ----------------------------------------------------------------------------
+  Прототип официального сайта региональной федерации.
+  Структура взята с ffarsport.ru, адаптирована под спортивную скакалку.
+  Single-file HTML/CSS/JS, mobile-first.
+  ============================================================================
+-->
+<html lang="ru">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta name="theme-color" content="#0a3a7c" />
+<title>ФРСРК — Федерация роуп скиппинга Республики Крым</title>
+<meta name="description" content="Официальный сайт Федерации роуп скиппинга Республики Крым. Соревнования, заявки, реестры спортсменов и судей, обучение, документы." />
+
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Unbounded:wght@500;700;800&display=swap&subset=cyrillic,cyrillic-ext,latin" rel="stylesheet" />
+
+<style>
+  /* ── Tokens ──────────────────────────────────────────────────── */
+  :root {
+    --primary:       #0a3a7c;
+    --primary-dark:  #052a5c;
+    --primary-light: #1656a8;
+    --accent:        #d32027;
+    --accent-soft:   #f7e8e9;
+    --bg:            #ffffff;
+    --bg-alt:        #f4f6fa;
+    --bg-dark:       #0c1828;
+    --text:          #0c1828;
+    --text-muted:    #5a6577;
+    --border:        #e2e6ec;
+    --shadow-sm:     0 1px 2px rgba(12,24,40,.06), 0 2px 8px rgba(12,24,40,.04);
+    --shadow-md:     0 4px 16px rgba(12,24,40,.08), 0 8px 32px rgba(12,24,40,.06);
+    --radius:        4px;
+    --radius-lg:     8px;
+    --container:     1200px;
+  }
+
+  /* ── Reset ───────────────────────────────────────────────────── */
+  *, *::before, *::after { box-sizing: border-box; }
+  html { scroll-behavior: smooth; -webkit-text-size-adjust: 100%; }
+  body {
+    margin: 0;
+    font-family: 'Manrope', system-ui, -apple-system, sans-serif;
+    font-size: 16px;
+    line-height: 1.55;
+    color: var(--text);
+    background: var(--bg);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+  img, svg { max-width: 100%; display: block; }
+  a { color: var(--primary); text-decoration: none; transition: color .15s; }
+  a:hover { color: var(--accent); }
+  button { font-family: inherit; cursor: pointer; }
+
+  h1, h2, h3, h4 {
+    font-family: 'Unbounded', 'Manrope', sans-serif;
+    font-weight: 700;
+    letter-spacing: -.01em;
+    margin: 0;
+    line-height: 1.15;
+  }
+
+  .container {
+    width: 100%;
+    max-width: var(--container);
+    margin: 0 auto;
+    padding: 0 16px;
+  }
+  @media (min-width: 768px) { .container { padding: 0 24px; } }
+
+  /* ── Top utility bar (socials only) ──────────────────────────── */
+  .topbar {
+    background: var(--primary-dark);
+    color: rgba(255,255,255,.85);
+    font-size: 13px;
+    padding: 8px 0;
+  }
+  .topbar__inner {
+    display: flex; justify-content: center; align-items: center;
+  }
+  .topbar__socials { display: flex; gap: 14px; }
+  .topbar__socials a {
+    color: rgba(255,255,255,.85); display: inline-flex; align-items: center;
+  }
+  .topbar__socials a:hover { color: #fff; }
+  .topbar__socials svg { width: 16px; height: 16px; fill: currentColor; }
+
+  /* ── Header / brand ──────────────────────────────────────────── */
+  .header { background: #fff; border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 50; }
+  .header__inner {
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 16px; padding: 14px 0;
+  }
+  .brand { display: flex; align-items: center; gap: 12px; }
+  .brand__mark {
+    width: 48px; height: 48px; flex: 0 0 48px;
+    background: var(--primary);
+    border-radius: 50%;
+    display: grid; place-items: center;
+    color: #fff;
+    box-shadow: var(--shadow-sm);
+  }
+  .brand__mark svg { width: 30px; height: 30px; }
+  .brand__text { line-height: 1.1; }
+  .brand__abbr {
+    font-family: 'Unbounded', sans-serif;
+    font-weight: 800;
+    font-size: 20px;
+    color: var(--primary);
+    letter-spacing: .02em;
+  }
+  .brand__full {
+    font-size: 11px; color: var(--text-muted);
+    text-transform: uppercase; letter-spacing: .08em;
+    margin-top: 2px;
+  }
+  @media (min-width: 768px) {
+    .brand__abbr { font-size: 24px; }
+    .brand__full { font-size: 12px; }
+  }
+
+  .menu-toggle {
+    background: none; border: 1px solid var(--border);
+    width: 44px; height: 44px; border-radius: var(--radius);
+    display: grid; place-items: center;
+  }
+  .menu-toggle svg { width: 22px; height: 22px; stroke: var(--text); }
+  @media (min-width: 1024px) { .menu-toggle { display: none; } }
+
+  /* ── Main nav ────────────────────────────────────────────────── */
+  .nav {
+    background: var(--primary);
+    border-top: 3px solid var(--accent);
+  }
+  .nav__list {
+    list-style: none; margin: 0; padding: 0;
+    display: none;
+  }
+  .nav.is-open .nav__list { display: block; }
+  .nav__list a {
+    display: block;
+    padding: 14px 16px;
+    color: #fff;
+    font-size: 14px;
+    font-weight: 500;
+    border-bottom: 1px solid rgba(255,255,255,.08);
+    transition: background .15s, color .15s;
+  }
+  .nav__list a:hover, .nav__list a.is-active {
+    background: var(--primary-dark);
+    color: #fff;
+  }
+
+  @media (min-width: 1024px) {
+    .nav__list {
+      display: flex !important;
+      flex-wrap: wrap;
+      max-width: var(--container);
+      margin: 0 auto;
+      padding: 0 16px;
+    }
+    .nav__list a {
+      border-bottom: none;
+      padding: 14px 14px;
+      font-size: 13px;
+      letter-spacing: .01em;
+      position: relative;
+    }
+    .nav__list a:hover, .nav__list a.is-active {
+      background: var(--primary-dark);
+    }
+  }
+
+  /* ── Hero ────────────────────────────────────────────────────── */
+  .hero {
+    position: relative;
+    background:
+      linear-gradient(135deg, rgba(10,58,124,.92) 0%, rgba(5,42,92,.88) 100%),
+      radial-gradient(circle at 20% 30%, #1656a8 0%, transparent 40%),
+      radial-gradient(circle at 80% 80%, #0a3a7c 0%, transparent 50%),
+      var(--primary-dark);
+    color: #fff;
+    overflow: hidden;
+    padding: 64px 0 80px;
+  }
+  .hero::before {
+    content: "";
+    position: absolute; inset: 0;
+    background-image:
+      repeating-linear-gradient(
+        45deg,
+        transparent 0 40px,
+        rgba(255,255,255,.02) 40px 41px
+      );
+    pointer-events: none;
+  }
+  .hero__rope {
+    position: absolute;
+    right: -80px; top: 50%; transform: translateY(-50%);
+    width: 600px; height: 600px;
+    opacity: .15;
+    pointer-events: none;
+  }
+  .hero__inner { position: relative; z-index: 2; }
+  .hero__eyebrow {
+    display: inline-block;
+    font-size: 12px; font-weight: 600;
+    text-transform: uppercase; letter-spacing: .15em;
+    background: rgba(255,255,255,.08);
+    border: 1px solid rgba(255,255,255,.18);
+    padding: 6px 14px;
+    border-radius: 99px;
+    margin-bottom: 20px;
+  }
+  .hero__title {
+    font-size: clamp(28px, 6vw, 52px);
+    font-weight: 800;
+    line-height: 1.05;
+    margin-bottom: 18px;
+    text-transform: uppercase;
+  }
+  .hero__title .accent { color: #ffd5d6; }
+  .hero__subtitle {
+    font-size: clamp(15px, 2.4vw, 18px);
+    max-width: 640px;
+    color: rgba(255,255,255,.85);
+    margin-bottom: 32px;
+  }
+  .hero__cta { display: flex; gap: 12px; flex-wrap: wrap; }
+
+  .btn {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 14px 24px;
+    border-radius: var(--radius);
+    font-weight: 600;
+    font-size: 14px;
+    border: none;
+    text-transform: uppercase;
+    letter-spacing: .04em;
+    transition: transform .1s, box-shadow .15s, background .15s;
+  }
+  .btn:active { transform: translateY(1px); }
+  .btn--primary { background: var(--accent); color: #fff; box-shadow: 0 4px 12px rgba(211,32,39,.35); }
+  .btn--primary:hover { background: #b21a20; color: #fff; }
+  .btn--ghost {
+    background: transparent; color: #fff;
+    border: 1.5px solid rgba(255,255,255,.4);
+  }
+  .btn--ghost:hover { background: rgba(255,255,255,.1); color: #fff; border-color: #fff; }
+
+  /* ── Stats strip ─────────────────────────────────────────────── */
+  .stats {
+    background: #fff;
+    border-bottom: 1px solid var(--border);
+    margin-top: -40px;
+    position: relative; z-index: 3;
+    box-shadow: var(--shadow-md);
+    border-radius: var(--radius-lg);
+  }
+  .stats__grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0;
+  }
+  .stat {
+    padding: 20px 16px;
+    text-align: center;
+    border-right: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+  }
+  .stat:nth-child(2n) { border-right: none; }
+  .stat:nth-last-child(-n+2) { border-bottom: none; }
+  .stat__num {
+    font-family: 'Unbounded', sans-serif;
+    font-weight: 800;
+    font-size: clamp(28px, 5vw, 40px);
+    color: var(--primary);
+    line-height: 1;
+  }
+  .stat__label {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: .1em;
+    color: var(--text-muted);
+    margin-top: 8px;
+  }
+  @media (min-width: 768px) {
+    .stats__grid { grid-template-columns: repeat(4, 1fr); }
+    .stat { padding: 28px 16px; border-bottom: none; border-right: 1px solid var(--border); }
+    .stat:last-child { border-right: none; }
+  }
+
+  /* ── Section base ────────────────────────────────────────────── */
+  section { padding: 56px 0; }
+  @media (min-width: 768px) { section { padding: 72px 0; } }
+
+  .section-head {
+    margin-bottom: 32px;
+    text-align: left;
+  }
+  .section-head__eyebrow {
+    display: inline-block;
+    font-size: 12px; font-weight: 700;
+    text-transform: uppercase; letter-spacing: .15em;
+    color: var(--accent);
+    margin-bottom: 8px;
+  }
+  .section-head__title {
+    font-size: clamp(24px, 4vw, 36px);
+    text-transform: uppercase;
+  }
+  .section-head__title::after {
+    content: ""; display: block;
+    width: 48px; height: 3px;
+    background: var(--accent);
+    margin-top: 14px;
+  }
+  .section-head__lead {
+    margin-top: 14px;
+    color: var(--text-muted);
+    max-width: 720px;
+  }
+
+  /* ── News ───────────────────────────────────────────────────── */
+  .news { background: var(--bg-alt); }
+  .news__grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+  @media (min-width: 768px) { .news__grid { grid-template-columns: repeat(2, 1fr); } }
+  @media (min-width: 1024px) { .news__grid { grid-template-columns: repeat(3, 1fr); } }
+  .news-card {
+    background: #fff;
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    box-shadow: var(--shadow-sm);
+    transition: transform .2s, box-shadow .2s;
+    display: flex; flex-direction: column;
+  }
+  .news-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-md); }
+  .news-card__img {
+    aspect-ratio: 16/9;
+    background: linear-gradient(135deg, var(--primary-light), var(--primary-dark));
+    display: grid; place-items: center;
+    color: rgba(255,255,255,.4);
+    font-family: 'Unbounded', sans-serif;
+    font-size: 60px; font-weight: 800;
+  }
+  .news-card__body { padding: 18px 20px 22px; flex: 1; display: flex; flex-direction: column; }
+  .news-card__date {
+    font-size: 12px; color: var(--text-muted);
+    text-transform: uppercase; letter-spacing: .08em;
+    margin-bottom: 8px;
+  }
+  .news-card__tag {
+    display: inline-block;
+    background: var(--accent-soft);
+    color: var(--accent);
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .08em;
+    padding: 3px 8px;
+    border-radius: 3px;
+    margin-bottom: 10px;
+    align-self: flex-start;
+  }
+  .news-card__title {
+    font-family: 'Unbounded', sans-serif;
+    font-weight: 700;
+    font-size: 17px;
+    margin-bottom: 10px;
+    color: var(--text);
+    line-height: 1.3;
+  }
+  .news-card__excerpt {
+    color: var(--text-muted);
+    font-size: 14px;
+    flex: 1;
+    margin-bottom: 14px;
+  }
+  .news-card__more {
+    font-size: 13px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: .08em;
+    color: var(--primary);
+  }
+
+  /* ── Disciplines ─────────────────────────────────────────────── */
+  .disciplines__grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+  @media (min-width: 768px) { .disciplines__grid { grid-template-columns: repeat(3, 1fr); } }
+  .discipline {
+    background: #fff;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 28px 24px;
+    transition: border-color .2s, transform .2s;
+    position: relative;
+    overflow: hidden;
+  }
+  .discipline::before {
+    content: ""; position: absolute; left: 0; top: 0;
+    width: 4px; height: 100%; background: var(--primary);
+    transition: background .2s;
+  }
+  .discipline:hover { transform: translateY(-3px); border-color: var(--primary); }
+  .discipline:hover::before { background: var(--accent); }
+  .discipline__icon {
+    width: 56px; height: 56px;
+    border-radius: 50%;
+    background: var(--accent-soft);
+    color: var(--accent);
+    display: grid; place-items: center;
+    margin-bottom: 18px;
+  }
+  .discipline__icon svg { width: 28px; height: 28px; stroke-width: 2; }
+  .discipline__title {
+    font-size: 18px;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+  .discipline__desc {
+    font-size: 14px;
+    color: var(--text-muted);
+  }
+
+  /* ── Quick nav grid (как у ФФАР: разделы сайта) ─────────────── */
+  .quicknav { background: var(--bg-alt); }
+  .quicknav__grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+  }
+  @media (min-width: 768px) { .quicknav__grid { grid-template-columns: repeat(3, 1fr); gap: 16px; } }
+  @media (min-width: 1024px) { .quicknav__grid { grid-template-columns: repeat(4, 1fr); } }
+  .quicknav__card {
+    background: #fff;
+    padding: 24px 20px;
+    border-radius: var(--radius-lg);
+    border-top: 3px solid var(--primary);
+    transition: transform .2s, box-shadow .2s, border-color .2s;
+    display: flex; flex-direction: column; gap: 10px;
+    min-height: 130px;
+  }
+  .quicknav__card:hover {
+    transform: translateY(-3px);
+    box-shadow: var(--shadow-md);
+    border-top-color: var(--accent);
+  }
+  .quicknav__icon { width: 28px; height: 28px; color: var(--primary); }
+  .quicknav__icon svg { width: 100%; height: 100%; stroke-width: 1.8; }
+  .quicknav__title {
+    font-family: 'Unbounded', sans-serif;
+    font-weight: 700;
+    font-size: 13px;
+    color: var(--text);
+    text-transform: uppercase;
+    line-height: 1.25;
+    letter-spacing: .02em;
+  }
+  .quicknav__desc {
+    font-size: 12px;
+    color: var(--text-muted);
+    line-height: 1.4;
+  }
+
+  /* ── Calendar / upcoming ─────────────────────────────────────── */
+  .calendar__list { display: flex; flex-direction: column; gap: 12px; }
+  .calendar__item {
+    display: grid;
+    grid-template-columns: 64px 1fr;
+    gap: 16px;
+    background: #fff;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 16px;
+    transition: border-color .2s;
+  }
+  @media (min-width: 768px) {
+    .calendar__item { grid-template-columns: 80px 1fr auto; align-items: center; }
+  }
+  .calendar__item:hover { border-color: var(--primary); }
+  .calendar__date {
+    background: var(--primary);
+    color: #fff;
+    border-radius: var(--radius);
+    padding: 10px 6px;
+    text-align: center;
+    line-height: 1;
+  }
+  .calendar__day {
+    font-family: 'Unbounded', sans-serif;
+    font-size: 22px; font-weight: 800;
+    display: block;
+  }
+  .calendar__month {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: .08em;
+    margin-top: 4px;
+    opacity: .9;
+  }
+  .calendar__title {
+    font-family: 'Unbounded', sans-serif;
+    font-weight: 700;
+    font-size: 15px;
+    margin-bottom: 4px;
+  }
+  .calendar__meta {
+    font-size: 13px;
+    color: var(--text-muted);
+  }
+  .calendar__status {
+    display: inline-block;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .08em;
+    padding: 4px 10px;
+    border-radius: 99px;
+  }
+  .calendar__status--open { background: #e7f5e9; color: #1f7a30; }
+  .calendar__status--soon { background: #fff4e0; color: #b06b00; }
+
+  /* ── Partners ────────────────────────────────────────────────── */
+  .partners { background: var(--bg-alt); }
+  .partners__grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
+  }
+  @media (min-width: 768px) { .partners__grid { grid-template-columns: repeat(4, 1fr); } }
+  .partner {
+    background: #fff;
+    aspect-ratio: 16/9;
+    border-radius: var(--radius-lg);
+    display: grid; place-items: center;
+    padding: 20px;
+    text-align: center;
+    border: 1px solid var(--border);
+    transition: transform .2s;
+  }
+  .partner:hover { transform: scale(1.03); }
+  .partner__name {
+    font-family: 'Unbounded', sans-serif;
+    font-weight: 700;
+    font-size: 13px;
+    color: var(--primary-dark);
+    line-height: 1.2;
+  }
+  .partner__tag {
+    font-size: 10px;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: .1em;
+    margin-top: 6px;
+  }
+
+  /* ── Contacts ────────────────────────────────────────────────── */
+  .contacts__grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 24px;
+  }
+  @media (min-width: 1024px) { .contacts__grid { grid-template-columns: 1fr 1fr; gap: 48px; } }
+  .contact-block h3 {
+    font-size: 14px;
+    text-transform: uppercase;
+    letter-spacing: .1em;
+    color: var(--accent);
+    margin-bottom: 12px;
+  }
+  .contact-block p, .contact-block a {
+    font-size: 16px;
+    margin: 6px 0;
+    display: block;
+    color: var(--text);
+  }
+  .contact-block a:hover { color: var(--accent); }
+
+  /* ── Footer ──────────────────────────────────────────────────── */
+  .footer {
+    background: var(--bg-dark);
+    color: rgba(255,255,255,.75);
+    padding: 56px 0 24px;
+    font-size: 14px;
+  }
+  .footer a { color: rgba(255,255,255,.75); }
+  .footer a:hover { color: #fff; }
+  .footer__grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 32px;
+    margin-bottom: 40px;
+  }
+  @media (min-width: 768px) { .footer__grid { grid-template-columns: 2fr 1fr 1fr 1fr; gap: 32px; } }
+  .footer__brand .brand__abbr { color: #fff; }
+  .footer__brand .brand__full { color: rgba(255,255,255,.55); }
+  .footer__brand p {
+    margin: 16px 0 0; max-width: 320px;
+    color: rgba(255,255,255,.6);
+    font-size: 13px;
+    line-height: 1.5;
+  }
+  .footer h4 {
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: .1em;
+    color: #fff;
+    margin-bottom: 14px;
+    font-family: 'Unbounded', sans-serif;
+  }
+  .footer ul { list-style: none; padding: 0; margin: 0; }
+  .footer ul li { margin-bottom: 8px; }
+  .footer__bottom {
+    border-top: 1px solid rgba(255,255,255,.1);
+    padding-top: 20px;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 12px;
+    font-size: 12px;
+    color: rgba(255,255,255,.5);
+  }
+
+  /* ── Reveal animation ────────────────────────────────────────── */
+  .reveal { opacity: 0; transform: translateY(20px); transition: opacity .6s ease, transform .6s ease; }
+  .reveal.is-visible { opacity: 1; transform: none; }
+  @media (prefers-reduced-motion: reduce) {
+    .reveal { opacity: 1; transform: none; transition: none; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ============ TOP UTILITY BAR ============ -->
+<div class="topbar">
+  <div class="topbar__inner">
+    <div class="topbar__socials">
+      <a href="#" aria-label="Telegram"><svg viewBox="0 0 24 24"><path d="M9.78 18.65l.28-4.23 7.68-6.92c.34-.31-.07-.46-.52-.19L7.74 13.3 3.64 12c-.88-.25-.89-.86.2-1.3l15.97-6.16c.73-.33 1.43.18 1.15 1.3l-2.72 12.81c-.19.91-.74 1.13-1.5.71L12.6 16.3l-1.99 1.93c-.23.23-.42.42-.83.42z"/></svg></a>
+      <a href="#" aria-label="VK"><svg viewBox="0 0 24 24"><path d="M12.785 16.241s.288-.032.435-.193c.135-.148.131-.426.131-.426s-.019-1.298.583-1.491c.594-.19 1.357 1.265 2.165 1.825.611.422 1.075.331 1.075.331l2.17-.03s1.135-.07.597-.967c-.044-.073-.313-.66-1.612-1.864-1.36-1.262-1.18-1.057.46-3.252.998-1.337 1.398-2.146 1.273-2.494-.118-.33-.85-.243-.85-.243l-2.434.015s-.181-.025-.314.054c-.131.078-.215.26-.215.26s-.388 1.034-.906 1.913c-1.092 1.853-1.529 1.951-1.708 1.835-.413-.267-.31-1.071-.31-1.642 0-1.789.272-2.535-.529-2.728-.265-.064-.46-.107-1.139-.114-.871-.009-1.609.003-2.027.208-.278.136-.493.439-.362.456.162.022.529.099.724.365.252.342.243 1.111.243 1.111s.144 2.114-.339 2.378c-.331.18-.785-.187-1.759-1.871-.499-.86-.876-1.812-.876-1.812s-.073-.179-.202-.275c-.156-.116-.374-.153-.374-.153l-2.314.015s-.347.01-.475.161c-.114.135-.009.413-.009.413s1.812 4.243 3.864 6.38c1.881 1.96 4.018 1.832 4.018 1.832z"/></svg></a>
+      <a href="#" aria-label="YouTube"><svg viewBox="0 0 24 24"><path d="M21.6 7.2a2.5 2.5 0 0 0-1.8-1.8C18.2 5 12 5 12 5s-6.2 0-7.8.4A2.5 2.5 0 0 0 2.4 7.2C2 8.8 2 12 2 12s0 3.2.4 4.8a2.5 2.5 0 0 0 1.8 1.8C5.8 19 12 19 12 19s6.2 0 7.8-.4a2.5 2.5 0 0 0 1.8-1.8c.4-1.6.4-4.8.4-4.8s0-3.2-.4-4.8zM10 15V9l5.2 3-5.2 3z"/></svg></a>
+      <a href="#" aria-label="WhatsApp"><svg viewBox="0 0 24 24"><path d="M17.6 14.2c-.3-.1-1.7-.8-1.9-.9-.3-.1-.5-.1-.7.1-.2.3-.8.9-.9 1.1-.2.2-.3.2-.6.1-.3-.2-1.2-.5-2.3-1.4-.9-.8-1.4-1.7-1.6-2-.2-.3 0-.5.1-.6.1-.1.3-.3.4-.5.1-.2.2-.3.3-.5.1-.2 0-.4 0-.5-.1-.1-.7-1.6-.9-2.2-.2-.6-.5-.5-.7-.5h-.6c-.2 0-.5.1-.8.4-.3.3-1 1-1 2.4 0 1.4 1 2.8 1.2 3 .1.2 2 3.1 4.9 4.3.7.3 1.2.5 1.6.6.7.2 1.3.2 1.8.1.5-.1 1.7-.7 1.9-1.4.2-.7.2-1.2.2-1.4-.1-.1-.3-.2-.6-.3zM12 2C6.5 2 2 6.5 2 12c0 1.8.5 3.4 1.3 4.9L2 22l5.3-1.3c1.4.8 3 1.3 4.7 1.3 5.5 0 10-4.5 10-10S17.5 2 12 2z"/></svg></a>
+    </div>
+  </div>
+</div>
+
+<!-- ============ HEADER ============ -->
+<header class="header">
+  <div class="container header__inner">
+    <a href="#" class="brand" aria-label="ФРСРК — главная">
+      <div class="brand__mark" aria-hidden="true">
+        <!-- jump rope arc + figure -->
+        <svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M5 11 Q 16 2, 27 11" />
+          <circle cx="16" cy="13" r="2.2" fill="currentColor" stroke="none"/>
+          <path d="M16 15 L16 21 M16 18 L13 22 M16 18 L19 22 M16 17 L13 14 M16 17 L19 14"/>
+        </svg>
+      </div>
+      <div class="brand__text">
+        <div class="brand__abbr">ФРСРК</div>
+        <div class="brand__full">Федерация роуп скиппинга<br>Республики Крым</div>
+      </div>
+    </a>
+    <button class="menu-toggle" id="menuToggle" aria-label="Меню" aria-expanded="false">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
+    </button>
+  </div>
+</header>
+
+<!-- ============ MAIN NAV ============ -->
+<nav class="nav" id="mainNav" aria-label="Основная навигация">
+  <ul class="nav__list">
+    <li><a href="#" class="is-active">Главная</a></li>
+    <li><a href="#about">О ФРСРК</a></li>
+    <li><a href="#documents">Документы</a></li>
+    <li><a href="#calendar">Соревнования</a></li>
+    <li><a href="#ekp">Заявка ЕКП 2026</a></li>
+    <li><a href="#athletes">Спортсмены</a></li>
+    <li><a href="#judges">Судьи</a></li>
+    <li><a href="#education">Обучение</a></li>
+    <li><a href="#license">Лицензирование</a></li>
+    <li><a href="#payment">Онлайн-оплата</a></li>
+    <li><a href="#contacts">Контакты</a></li>
+  </ul>
+</nav>
+
+<!-- ============ HERO ============ -->
+<section class="hero">
+  <svg class="hero__rope" viewBox="0 0 200 200" fill="none" stroke="white" stroke-width="2">
+    <circle cx="100" cy="100" r="80" stroke-dasharray="6 8"/>
+    <circle cx="100" cy="100" r="60" stroke-dasharray="4 6"/>
+    <circle cx="100" cy="100" r="40" stroke-dasharray="2 4"/>
+  </svg>
+  <div class="container hero__inner">
+    <span class="hero__eyebrow reveal">Региональная спортивная федерация</span>
+    <h1 class="hero__title reveal">Спортивная скакалка<br><span class="accent">Республики Крым</span></h1>
+    <p class="hero__subtitle reveal">Развиваем роуп скиппинг и Double Dutch на территории Республики Крым. Соревнования, обучение, аккредитация судей, реестр спортсменов и взаимодействие с Федерацией роуп скиппинга России.</p>
+    <div class="hero__cta reveal">
+      <a href="#calendar" class="btn btn--primary">Календарь соревнований
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+      </a>
+      <a href="#about" class="btn btn--ghost">О федерации</a>
+    </div>
+  </div>
+</section>
+
+<!-- ============ STATS ============ -->
+<div class="container">
+  <div class="stats reveal">
+    <div class="stats__grid">
+      <div class="stat"><div class="stat__num">14</div><div class="stat__label">Городов и районов</div></div>
+      <div class="stat"><div class="stat__num">22</div><div class="stat__label">Клубов и секций</div></div>
+      <div class="stat"><div class="stat__num">340+</div><div class="stat__label">Спортсменов</div></div>
+      <div class="stat"><div class="stat__num">18</div><div class="stat__label">Аттестованных судей</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ NEWS ============ -->
+<section class="news" id="news">
+  <div class="container">
+    <div class="section-head reveal">
+      <div class="section-head__eyebrow">Лента федерации</div>
+      <h2 class="section-head__title">Новости и события</h2>
+      <p class="section-head__lead">Анонсы соревнований, протоколы, методические материалы, изменения в реестре спортсменов и судей.</p>
+    </div>
+    <div class="news__grid">
+      <article class="news-card reveal">
+        <div class="news-card__img">01</div>
+        <div class="news-card__body">
+          <div class="news-card__date">12 мая 2026</div>
+          <span class="news-card__tag">Соревнования</span>
+          <h3 class="news-card__title">Открыта регистрация на первенство Крыма по роуп скиппингу 2026</h3>
+          <p class="news-card__excerpt">Старт приёма заявок от клубов и спортивных школ Республики Крым. Соревнования пройдут в трёх дисциплинах.</p>
+          <a href="#" class="news-card__more">Читать далее →</a>
+        </div>
+      </article>
+      <article class="news-card reveal">
+        <div class="news-card__img">02</div>
+        <div class="news-card__body">
+          <div class="news-card__date">5 мая 2026</div>
+          <span class="news-card__tag">Обучение</span>
+          <h3 class="news-card__title">Семинар судей второй категории: Double Dutch single rounds</h3>
+          <p class="news-card__excerpt">Очно-заочный курс с практикой судейства по правилам IJRU. Аттестация в формате видео-разбора.</p>
+          <a href="#" class="news-card__more">Читать далее →</a>
+        </div>
+      </article>
+      <article class="news-card reveal">
+        <div class="news-card__img">03</div>
+        <div class="news-card__body">
+          <div class="news-card__date">29 апреля 2026</div>
+          <span class="news-card__tag">Документы</span>
+          <h3 class="news-card__title">Утверждён календарный план физкультурных мероприятий на 2026</h3>
+          <p class="news-card__excerpt">Положение и регламенты опубликованы в разделе «Документы». Заявки ЕКП — до 30 июня.</p>
+          <a href="#" class="news-card__more">Читать далее →</a>
+        </div>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- ============ DISCIPLINES ============ -->
+<section class="disciplines" id="about">
+  <div class="container">
+    <div class="section-head reveal">
+      <div class="section-head__eyebrow">Виды спортивной скакалки</div>
+      <h2 class="section-head__title">Дисциплины федерации</h2>
+      <p class="section-head__lead">ФРСРК развивает все основные дисциплины роуп скиппинга, признанные Международным союзом скакалки (IJRU) и ФРСР.</p>
+    </div>
+    <div class="disciplines__grid">
+      <div class="discipline reveal">
+        <div class="discipline__icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12 Q 12 4, 21 12"/><circle cx="12" cy="13" r="2"/><path d="M12 15v5M9 19l3-2 3 2"/></svg>
+        </div>
+        <h3 class="discipline__title">Одиночная скакалка</h3>
+        <p class="discipline__desc">Single rope. Скоростные виды (Speed 30s/3 min, Speed Endurance), фристайл и парные программы.</p>
+      </div>
+      <div class="discipline reveal">
+        <div class="discipline__icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8 Q 12 0, 21 8"/><path d="M3 14 Q 12 6, 21 14"/><circle cx="12" cy="15" r="2"/></svg>
+        </div>
+        <h3 class="discipline__title">Double Dutch</h3>
+        <p class="discipline__desc">Прыжки через две длинные скакалки. DD Speed, DD Single Freestyle, DD Pair Freestyle, DDC.</p>
+      </div>
+      <div class="discipline reveal">
+        <div class="discipline__icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="13" r="2"/><circle cx="16" cy="13" r="2"/><path d="M3 9 Q 12 2, 21 9"/><path d="M8 15v4M16 15v4"/></svg>
+        </div>
+        <h3 class="discipline__title">Командные виды</h3>
+        <p class="discipline__desc">Wheel, Show, Team Show. Командные и показательные программы для коллективов клубов и школ.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ QUICK NAV (как у ФФАР) ============ -->
+<section class="quicknav">
+  <div class="container">
+    <div class="section-head reveal">
+      <div class="section-head__eyebrow">Навигация</div>
+      <h2 class="section-head__title">Разделы сайта</h2>
+      <p class="section-head__lead">Перейдите в нужный раздел или воспользуйтесь главным меню сайта.</p>
+    </div>
+    <div class="quicknav__grid">
+      <a href="#documents" class="quicknav__card reveal">
+        <span class="quicknav__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="9" y1="13" x2="15" y2="13"/><line x1="9" y1="17" x2="15" y2="17"/></svg></span>
+        <div class="quicknav__title">Документы</div>
+        <div class="quicknav__desc">Уставы, положения, регламенты, протоколы</div>
+      </a>
+      <a href="#calendar" class="quicknav__card reveal">
+        <span class="quicknav__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></span>
+        <div class="quicknav__title">Соревнования</div>
+        <div class="quicknav__desc">Календарь, положения, итоги</div>
+      </a>
+      <a href="#athletes" class="quicknav__card reveal">
+        <span class="quicknav__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><path d="M20 8v6M23 11h-6"/></svg></span>
+        <div class="quicknav__title">Спортсмены</div>
+        <div class="quicknav__desc">Реестр участников и разрядов</div>
+      </a>
+      <a href="#judges" class="quicknav__card reveal">
+        <span class="quicknav__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v4M5 8l3 3M19 8l-3 3M3 14h4M21 14h-4M9 22h6M12 14v8"/><circle cx="12" cy="11" r="3"/></svg></span>
+        <div class="quicknav__title">Судьи</div>
+        <div class="quicknav__desc">Реестр и ходатайство на категорию</div>
+      </a>
+      <a href="#ekp" class="quicknav__card reveal">
+        <span class="quicknav__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3 8-8"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg></span>
+        <div class="quicknav__title">Заявка ЕКП</div>
+        <div class="quicknav__desc">Включение в Единый календарный план</div>
+      </a>
+      <a href="#education" class="quicknav__card reveal">
+        <span class="quicknav__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg></span>
+        <div class="quicknav__title">Обучение</div>
+        <div class="quicknav__desc">Семинары для тренеров и судей</div>
+      </a>
+      <a href="#license" class="quicknav__card reveal">
+        <span class="quicknav__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="m9 12 2 2 4-4"/></svg></span>
+        <div class="quicknav__title">Лицензирование</div>
+        <div class="quicknav__desc">Лицензии спортсменов на сезон</div>
+      </a>
+      <a href="#insurance" class="quicknav__card reveal">
+        <span class="quicknav__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg></span>
+        <div class="quicknav__title">Страхование</div>
+        <div class="quicknav__desc">Страховка спортсменов и судей</div>
+      </a>
+      <a href="#payment" class="quicknav__card reveal">
+        <span class="quicknav__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg></span>
+        <div class="quicknav__title">Онлайн-оплата</div>
+        <div class="quicknav__desc">Взносы, заявочные, обучение</div>
+      </a>
+      <a href="#legal" class="quicknav__card reveal">
+        <span class="quicknav__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18"/><path d="M5 21V8l7-5 7 5v13"/><path d="M9 21v-8h6v8"/></svg></span>
+        <div class="quicknav__title">Юр. лицам</div>
+        <div class="quicknav__desc">Договор и оплата по счёту</div>
+      </a>
+      <a href="#regions" class="quicknav__card reveal">
+        <span class="quicknav__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg></span>
+        <div class="quicknav__title">Представители</div>
+        <div class="quicknav__desc">Контакты в городах и районах</div>
+      </a>
+      <a href="#vacancy" class="quicknav__card reveal">
+        <span class="quicknav__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg></span>
+        <div class="quicknav__title">Вакансии</div>
+        <div class="quicknav__desc">Тренеры, методисты, судьи</div>
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- ============ CALENDAR ============ -->
+<section class="calendar" id="calendar">
+  <div class="container">
+    <div class="section-head reveal">
+      <div class="section-head__eyebrow">Ближайшие старты</div>
+      <h2 class="section-head__title">Календарь соревнований</h2>
+      <p class="section-head__lead">Региональные и межмуниципальные соревнования на территории Республики Крым в текущем сезоне.</p>
+    </div>
+    <div class="calendar__list">
+      <a href="#" class="calendar__item reveal">
+        <div class="calendar__date"><span class="calendar__day">07</span><span class="calendar__month">Июн</span></div>
+        <div>
+          <div class="calendar__title">Открытое первенство Крыма по роуп скиппингу</div>
+          <div class="calendar__meta">Симферополь, СК «Спартак» · одиночная и парная скакалка</div>
+        </div>
+        <span class="calendar__status calendar__status--open">Заявки открыты</span>
+      </a>
+      <a href="#" class="calendar__item reveal">
+        <div class="calendar__date"><span class="calendar__day">21</span><span class="calendar__month">Июн</span></div>
+        <div>
+          <div class="calendar__title">Кубок Севастополя по Double Dutch</div>
+          <div class="calendar__meta">Севастополь, ДС «Муссон» · DD Speed, Single &amp; Pair Freestyle</div>
+        </div>
+        <span class="calendar__status calendar__status--open">Заявки открыты</span>
+      </a>
+      <a href="#" class="calendar__item reveal">
+        <div class="calendar__date"><span class="calendar__day">14</span><span class="calendar__month">Сен</span></div>
+        <div>
+          <div class="calendar__title">Чемпионат и первенство ФРСРК</div>
+          <div class="calendar__meta">Ялта, КСК «Юбилейный» · все дисциплины, отбор на ЧР</div>
+        </div>
+        <span class="calendar__status calendar__status--soon">Скоро</span>
+      </a>
+      <a href="#" class="calendar__item reveal">
+        <div class="calendar__date"><span class="calendar__day">02</span><span class="calendar__month">Ноя</span></div>
+        <div>
+          <div class="calendar__title">Турнир «Точка Отрыва Open»</div>
+          <div class="calendar__meta">Симферополь · детские возрастные группы 6–12 лет</div>
+        </div>
+        <span class="calendar__status calendar__status--soon">Скоро</span>
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- ============ PARTNERS ============ -->
+<section class="partners">
+  <div class="container">
+    <div class="section-head reveal">
+      <div class="section-head__eyebrow">Партнёры и регуляторы</div>
+      <h2 class="section-head__title">Сотрудничество</h2>
+    </div>
+    <div class="partners__grid">
+      <div class="partner reveal">
+        <div>
+          <div class="partner__name">ФРСР</div>
+          <div class="partner__tag">Федерация России</div>
+        </div>
+      </div>
+      <div class="partner reveal">
+        <div>
+          <div class="partner__name">Минспорт<br>Крыма</div>
+          <div class="partner__tag">Регулятор</div>
+        </div>
+      </div>
+      <div class="partner reveal">
+        <div>
+          <div class="partner__name">IJRU</div>
+          <div class="partner__tag">Международный союз</div>
+        </div>
+      </div>
+      <div class="partner reveal">
+        <div>
+          <div class="partner__name">Точка<br>Отрыва</div>
+          <div class="partner__tag">Базовый клуб</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ CONTACTS ============ -->
+<section id="contacts">
+  <div class="container">
+    <div class="section-head reveal">
+      <div class="section-head__eyebrow">Свяжитесь с нами</div>
+      <h2 class="section-head__title">Контакты</h2>
+    </div>
+    <div class="contacts__grid">
+      <div class="contact-block reveal">
+        <h3>Адрес</h3>
+        <p>Республика Крым, г. Симферополь</p>
+        <p>(физический офис уточняется)</p>
+        <h3 style="margin-top:24px">Телефон / Telegram</h3>
+        <a href="tel:+79780000000">+7 (978) 000-00-00</a>
+        <a href="https://t.me/iuriletics">@iuriletics</a>
+        <h3 style="margin-top:24px">E-mail</h3>
+        <a href="mailto:info@frsrk.ru">info@frsrk.ru</a>
+      </div>
+      <div class="contact-block reveal">
+        <h3>Руководство</h3>
+        <p><strong>Председатель / Президент федерации:</strong></p>
+        <p>Данильченко Юрий Леонидович</p>
+        <p style="margin-top:14px"><strong>Направление Double Dutch:</strong></p>
+        <p>методическая комиссия ФРСР</p>
+        <h3 style="margin-top:24px">Реквизиты</h3>
+        <p>ИП Данильченко Ю. Л. (на этапе регистрации федерации)</p>
+        <p>Будут опубликованы после регистрации в Минюсте РК.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ FOOTER ============ -->
+<footer class="footer">
+  <div class="container">
+    <div class="footer__grid">
+      <div class="footer__brand">
+        <div class="brand__abbr" style="font-family:'Unbounded',sans-serif;font-weight:800;font-size:24px;">ФРСРК</div>
+        <div class="brand__full" style="font-size:11px;text-transform:uppercase;letter-spacing:.08em;margin-top:4px;">Федерация роуп скиппинга Республики Крым</div>
+        <p>Региональная общественная организация, развивающая спортивную скакалку и Double Dutch в Республике Крым в составе ФРСР.</p>
+      </div>
+      <div>
+        <h4>Информация</h4>
+        <ul>
+          <li><a href="#about">О ФРСРК</a></li>
+          <li><a href="#documents">Документы</a></li>
+          <li><a href="#regions">Представители</a></li>
+          <li><a href="#license">Лицензирование</a></li>
+          <li><a href="#education">Обучение</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4>Соревнования</h4>
+        <ul>
+          <li><a href="#calendar">Календарь</a></li>
+          <li><a href="#ekp">Заявка ЕКП</a></li>
+          <li><a href="#judges">Ходатайство судей</a></li>
+          <li><a href="#payment">Онлайн-оплата</a></li>
+          <li><a href="#legal">Юр. лицам</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4>Соглашения</h4>
+        <ul>
+          <li><a href="#privacy">Политика конфиденциальности</a></li>
+          <li><a href="#offer">Публичная оферта</a></li>
+          <li><a href="#terms">Пользовательское соглашение</a></li>
+          <li><a href="#152fz">Согласие 152-ФЗ</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer__bottom">
+      <div>© 2026 ФРСРК. Все права защищены.</div>
+      <div>Сайт разработан в составе экосистемы «Точка Отрыва»</div>
+    </div>
+  </div>
+</footer>
+
+<script>
+  // Mobile menu toggle
+  const toggle = document.getElementById('menuToggle');
+  const nav = document.getElementById('mainNav');
+  toggle.addEventListener('click', () => {
+    const open = nav.classList.toggle('is-open');
+    toggle.setAttribute('aria-expanded', String(open));
+  });
+
+  // Close mobile nav after clicking a link
+  nav.querySelectorAll('a').forEach(a => {
+    a.addEventListener('click', () => {
+      if (window.matchMedia('(max-width: 1023px)').matches) {
+        nav.classList.remove('is-open');
+        toggle.setAttribute('aria-expanded', 'false');
+      }
+    });
+  });
+
+  // Reveal on scroll
+  const io = new IntersectionObserver((entries) => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        e.target.classList.add('is-visible');
+        io.unobserve(e.target);
+      }
+    });
+  }, { threshold: .12, rootMargin: '0px 0px -40px 0px' });
+  document.querySelectorAll('.reveal').forEach(el => io.observe(el));
+</script>
+
+</body>
+</html>

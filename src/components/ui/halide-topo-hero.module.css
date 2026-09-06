@@ -1,0 +1,497 @@
+/* ===== Scroll container ===== */
+.heroOuter {
+  height: 180vh;
+  background: #050b13;
+}
+
+/* ===== Hero (sticky for scroll-zoom) ===== */
+.hero {
+  --hero-silver: #f3f6fa;
+  --hero-accent: #d20f2d;
+  position: sticky;
+  top: 0;
+  height: 100svh;
+  isolation: isolate;
+  overflow: hidden;
+  background: #050b13;
+  color: var(--hero-silver);
+}
+
+.scene {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+}
+
+/* ===== Effect 1 · Entrance ===== */
+
+/* --- Background: scale(1) → scale(1.05), fade in --- */
+.backgroundLayer {
+  position: absolute;
+  inset: -5%;
+  opacity: 0;
+  transform: translate3d(0, 0, 0) scale(1);
+  transition:
+    opacity 1.4s ease,
+    transform 2.2s cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: transform, opacity;
+}
+
+.hero[data-ready="true"] .backgroundLayer {
+  opacity: 1;
+  transform: translate3d(0, 0, 0) scale(1.05);
+}
+
+.backgroundImage {
+  object-fit: cover;
+  object-position: center 35%;
+  filter: contrast(1.05) brightness(0.82) saturate(0.92);
+}
+
+/* --- Shade overlay --- */
+.backgroundShade {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  background:
+    linear-gradient(90deg, rgba(4, 10, 18, 0.94) 0%, rgba(4, 10, 18, 0.74) 29%, rgba(4, 10, 18, 0.18) 62%, rgba(4, 10, 18, 0.34) 100%),
+    linear-gradient(180deg, rgba(3, 8, 15, 0.38), transparent 42%, rgba(3, 8, 15, 0.76));
+}
+
+/* --- Light bloom: slow drift animation --- */
+.lightBloom {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  pointer-events: none;
+  opacity: 0;
+  background:
+    radial-gradient(circle at 67% 44%, rgba(255, 255, 255, 0.17), transparent 26%),
+    radial-gradient(circle at 75% 72%, rgba(210, 15, 45, 0.12), transparent 28%),
+    radial-gradient(circle at 22% 24%, rgba(28, 115, 203, 0.18), transparent 31%);
+  transition: opacity 1.6s ease 0.1s;
+}
+
+.hero[data-ready="true"] .lightBloom {
+  opacity: 1;
+  animation: bloomDrift 14s ease-in-out 1.2s infinite;
+}
+
+@keyframes bloomDrift {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  33% { transform: translate(12px, -6px) scale(1.02); }
+  66% { transform: translate(-8px, 4px) scale(0.98); }
+}
+
+/* --- Contours --- */
+.contours {
+  position: absolute;
+  inset: -30%;
+  z-index: 3;
+  pointer-events: none;
+  opacity: 0.22;
+  background-image:
+    repeating-radial-gradient(
+      ellipse at 68% 55%,
+      transparent 0,
+      transparent 43px,
+      rgba(255, 255, 255, 0.08) 44px,
+      transparent 46px
+    );
+  mask-image: radial-gradient(circle at 68% 55%, black 0 30%, transparent 63%);
+}
+
+/* --- Scene title (in front of athletes) --- */
+.sceneTitle {
+  position: absolute;
+  z-index: 7;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  opacity: 0;
+  transform: translate3d(0, 0, 0) scale(0.94);
+  transition:
+    opacity 1.4s ease 0.3s,
+    transform 2s cubic-bezier(0.16, 1, 0.3, 1) 0.3s;
+  will-change: transform, opacity;
+}
+
+.hero[data-ready="true"] .sceneTitle {
+  opacity: 1;
+  transform: translate3d(0, 0, 0) scale(1);
+}
+
+.sceneTitleText {
+  margin: 0;
+  font-size: clamp(4rem, 9.5vw, 12rem);
+  font-weight: 780;
+  line-height: 0.9;
+  letter-spacing: -0.05em;
+  text-transform: uppercase;
+  color: white;
+  white-space: nowrap;
+  text-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+}
+
+.sceneTitleSub {
+  display: block;
+  margin-top: 0.15em;
+  font-size: 0.38em;
+  font-weight: 560;
+  line-height: 1;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+  color: rgba(255, 255, 255, 0.82);
+}
+
+/* --- Mid layer (two turners + rope): horizontal spread entrance --- */
+.midLayer {
+  position: absolute;
+  inset: -8%;
+  z-index: 5;
+  opacity: 0;
+  transform: translate3d(0, 12px, 0) scaleX(0.88);
+  transition:
+    opacity 1.3s ease 0.2s,
+    transform 2s cubic-bezier(0.16, 1, 0.3, 1) 0.2s;
+  will-change: transform, opacity;
+  pointer-events: none;
+}
+
+.hero[data-ready="true"] .midLayer {
+  opacity: 1;
+  transform: translate3d(0, 0, 0) scaleX(1);
+}
+
+/* --- Front layer (jumper): rise from below --- */
+.frontLayer {
+  position: absolute;
+  inset: -10%;
+  z-index: 6;
+  opacity: 0;
+  transform: translate3d(0, 55px, 0) scale(0.96);
+  transition:
+    opacity 1.4s ease 0.4s,
+    transform 2.2s cubic-bezier(0.16, 1, 0.3, 1) 0.4s;
+  will-change: transform, opacity;
+  pointer-events: none;
+}
+
+.hero[data-ready="true"] .frontLayer {
+  opacity: 1;
+  transform: translate3d(0, 0, 0) scale(1);
+}
+
+/* --- Layer images --- */
+.layerImage {
+  object-fit: contain;
+  object-position: center 60%;
+  filter: drop-shadow(0 8px 32px rgba(0, 0, 0, 0.45));
+}
+
+/* --- Scroll vignette (rope-frame effect) --- */
+.scrollVignette {
+  position: absolute;
+  inset: 0;
+  z-index: 9;
+  pointer-events: none;
+  opacity: 0;
+  background: radial-gradient(
+    ellipse 42% 48% at 50% 52%,
+    transparent 0%,
+    rgba(5, 11, 19, 0.3) 60%,
+    rgba(5, 11, 19, 0.78) 80%,
+    rgba(5, 11, 19, 0.96) 100%
+  );
+}
+
+/* ===== After entrance: disable CSS transitions so JS controls transforms ===== */
+.hero[data-live="true"] .backgroundLayer,
+.hero[data-live="true"] .sceneTitle,
+.hero[data-live="true"] .midLayer,
+.hero[data-live="true"] .frontLayer {
+  transition: opacity 0.3s ease;
+}
+
+/* ===== Interface ===== */
+.interface {
+  position: relative;
+  z-index: 10;
+  display: grid;
+  height: 100%;
+  grid-template-columns: minmax(0, 0.78fr) minmax(260px, 1.22fr);
+  grid-template-rows: auto 1fr auto;
+  gap: 28px;
+  width: min(calc(100% - 40px), 1280px);
+  margin-inline: auto;
+  padding-block: clamp(34px, 5vw, 72px);
+  pointer-events: none;
+  opacity: 0;
+  transform: translateY(20px);
+  transition:
+    opacity 0.9s ease 0.85s,
+    transform 1.4s cubic-bezier(0.16, 1, 0.3, 1) 0.85s;
+}
+
+.hero[data-ready="true"] .interface {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.hero[data-live="true"] .interface {
+  transition: none;
+}
+
+.kicker,
+.meta,
+.archive,
+.cta,
+.secondaryCta {
+  pointer-events: auto;
+}
+
+.kicker {
+  align-self: start;
+  max-width: 500px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.78);
+}
+
+.meta {
+  justify-self: end;
+  display: grid;
+  gap: 2px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 0.66rem;
+  line-height: 1.55;
+  letter-spacing: 0.07em;
+  text-align: right;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.62);
+}
+
+.titleWrap {
+  grid-column: 1;
+  align-self: end;
+  max-width: 520px;
+}
+
+.subtitle {
+  margin: 0;
+  font-size: clamp(0.96rem, 1.4vw, 1.13rem);
+  line-height: 1.72;
+  color: rgba(243, 246, 250, 0.76);
+  text-shadow: 0 5px 18px rgba(0, 0, 0, 0.58);
+}
+
+.bottom {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 28px;
+}
+
+.archive {
+  display: grid;
+  gap: 2px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 0.7rem;
+  line-height: 1.55;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: rgba(243, 246, 250, 0.64);
+}
+
+.ctaGroup {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 12px;
+}
+
+.cta,
+.secondaryCta {
+  display: inline-flex;
+  min-height: 50px;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 0.8rem 1.35rem;
+  font-size: 0.75rem;
+  font-weight: 760;
+  letter-spacing: 0.075em;
+  text-transform: uppercase;
+  transition:
+    transform 0.25s ease,
+    background-color 0.25s ease,
+    color 0.25s ease,
+    border-color 0.25s ease;
+}
+
+.cta {
+  clip-path: polygon(0 0, 100% 0, 100% 68%, 88% 100%, 0 100%);
+  background: var(--hero-silver);
+  color: #06101c;
+}
+
+.cta:hover {
+  transform: translateY(-4px);
+  background: var(--hero-accent);
+  color: white;
+}
+
+.secondaryCta {
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  color: white;
+  background: rgba(6, 16, 28, 0.48);
+  backdrop-filter: blur(10px);
+}
+
+.secondaryCta:hover {
+  transform: translateY(-4px);
+  border-color: rgba(255, 255, 255, 0.6);
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.scrollHint {
+  position: absolute;
+  z-index: 20;
+  bottom: 18px;
+  left: 50%;
+  width: 1px;
+  height: 54px;
+  overflow: hidden;
+  background: rgba(255, 255, 255, 0.14);
+}
+
+.scrollHint::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to bottom, white, transparent);
+  animation: flow 2s infinite ease-in-out;
+}
+
+@keyframes flow {
+  0%,
+  100% {
+    transform: translateY(-100%);
+  }
+  50% {
+    transform: translateY(100%);
+  }
+}
+
+/* ===== Responsive ===== */
+
+@media (max-width: 1050px) {
+  .interface {
+    grid-template-columns: minmax(0, 0.9fr) minmax(180px, 1.1fr);
+  }
+
+  .backgroundShade {
+    background:
+      linear-gradient(90deg, rgba(4, 10, 18, 0.94) 0%, rgba(4, 10, 18, 0.7) 43%, rgba(4, 10, 18, 0.26) 100%),
+      linear-gradient(180deg, rgba(3, 8, 15, 0.4), transparent 42%, rgba(3, 8, 15, 0.78));
+  }
+}
+
+@media (max-width: 760px) {
+  .heroOuter {
+    height: auto;
+  }
+
+  .hero {
+    position: relative;
+    height: auto;
+    min-height: min(100svh, 780px);
+  }
+
+  .interface {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto auto 1fr auto;
+    height: min(calc(100svh - 120px), 660px);
+    width: min(calc(100% - 30px), 700px);
+    padding-block: 18px 28px;
+  }
+
+  .meta {
+    justify-self: start;
+    text-align: left;
+  }
+
+  .sceneTitle {
+    justify-content: center;
+    padding-bottom: 8%;
+  }
+
+  .sceneTitleText {
+    font-size: clamp(2.6rem, 11vw, 4.8rem);
+  }
+
+  .titleWrap {
+    grid-column: 1;
+    grid-row: 3;
+    align-self: start;
+  }
+
+  .backgroundShade {
+    background:
+      linear-gradient(180deg, rgba(4, 10, 18, 0.88) 0%, rgba(4, 10, 18, 0.58) 37%, rgba(4, 10, 18, 0.22) 62%, rgba(4, 10, 18, 0.78) 100%),
+      linear-gradient(90deg, rgba(4, 10, 18, 0.72), transparent 100%);
+  }
+
+  .bottom {
+    grid-column: 1;
+    grid-row: 4;
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .ctaGroup {
+    justify-content: flex-start;
+  }
+
+  .scrollVignette {
+    display: none;
+  }
+}
+
+@media (max-width: 520px) {
+  .hero {
+    min-height: min(100svh, 680px);
+  }
+
+  .interface {
+    min-height: min(calc(100svh - 120px), 580px);
+  }
+
+  .meta,
+  .archive {
+    display: none;
+  }
+
+  .sceneTitleText {
+    font-size: clamp(2.2rem, 12vw, 3.8rem);
+  }
+
+  .subtitle {
+    max-width: 31rem;
+    font-size: 0.88rem;
+    line-height: 1.55;
+  }
+
+  .ctaGroup,
+  .cta,
+  .secondaryCta {
+    width: 100%;
+  }
+}
