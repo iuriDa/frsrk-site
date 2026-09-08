@@ -7,16 +7,21 @@
     "build": "next build --webpack",
     "build:local": "NEXT_PUBLIC_SITE_URL=http://localhost:3002 next build --webpack",
     "prestart": "mkdir -p .next/standalone/.next/static .next/standalone/public && cp -R .next/static/. .next/standalone/.next/static/ && cp -R public/. .next/standalone/public/",
-    "start": "node .next/standalone/server.js",
+    "start": "node scripts/start.mjs",
+    "test:documents": "node --test scripts/test-documents.mjs",
+    "test:municipalities": "node --test scripts/test-municipalities.mjs",
+    "check:supabase": "node scripts/check-supabase.mjs",
     "lint": "eslint",
     "typecheck": "tsc --noEmit",
     "check": "npm run lint && npm run typecheck && npm run build:local",
     "reset:mac": "rm -rf node_modules .next package-lock.json && npm cache verify && npm install --include=optional"
   },
   "dependencies": {
+    "@pdf-lib/fontkit": "^1.1.1",
     "@supabase/supabase-js": "^2.112.3",
     "lucide-react": "^1.21.0",
     "next": "16.2.9",
+    "pdf-lib": "^1.17.1",
     "react": "19.2.4",
     "react-dom": "19.2.4"
   },

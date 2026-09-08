@@ -3,7 +3,8 @@ export const verificationRequired = {
   legalShortName: "ОО «ФРСРК»",
   phone: "+7 978 738-32-46",
   email: "crimea.skipping@mail.ru",
-  address: "295003, Республика Крым, г. Симферополь, ул. Балаклавская, дом 41, офис 11В",
+  address: "295003, Республика Крым, г. Симферополь, ул. Балаклавская, дом 41, офис 118",
+  addressMapUrl: "https://yandex.ru/maps/?text=" + encodeURIComponent("Симферополь, улица Балаклавская, 41"),
   ogrn: "1249100003448",
   accreditation: {
     status: "Аккредитована" as const,

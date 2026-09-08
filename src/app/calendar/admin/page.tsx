@@ -1,9 +1,11 @@
 import type { Metadata } from "next";
+import { AdminSectionNav } from "@/components/admin/admin-section-nav";
 import { CalendarApp } from "@/components/calendar/calendar-app";
 
 export const metadata: Metadata = {
   title: "Админ-панель: календарь",
   description: "Управление календарным планом Федерации роуп-скиппинга Республики Крым.",
+  robots: { index: false, follow: false },
 };
 
 export default function CalendarAdminPage() {
@@ -21,6 +23,7 @@ export default function CalendarAdminPage() {
             Управление мероприятиями общего календарного плана через существующие права редактора календаря.
           </p>
         </div>
+        <AdminSectionNav current="calendar" />
         <CalendarApp adminMode />
       </div>
     </main>

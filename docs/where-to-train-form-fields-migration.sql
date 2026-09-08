@@ -80,3 +80,6 @@ create index if not exists training_organizations_city_active_name_idx
   on public.training_organizations (city_id, active, name);
 
 commit;
+
+-- Просим PostgREST сразу перечитать структуру таблиц после ALTER TABLE.
+notify pgrst, 'reload schema';

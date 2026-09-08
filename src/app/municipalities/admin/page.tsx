@@ -1,10 +1,12 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
+import { AdminSectionNav } from "@/components/admin/admin-section-nav";
 import { WhereToTrainApp } from "@/components/where-to-train/where-to-train-app";
 
 export const metadata: Metadata = {
   title: "Админ-панель: где заниматься",
   description: "Управление муниципалитетами, координатами маркеров и организациями раздела «Где заниматься».",
+  robots: { index: false, follow: false },
 };
 
 export default function MunicipalitiesAdminPage() {
@@ -22,6 +24,7 @@ export default function MunicipalitiesAdminPage() {
             Муниципалитеты, ответственные представители, координаты маркеров и организации раздела.
           </p>
         </div>
+        <AdminSectionNav current="municipalities" />
         <Suspense fallback={<div className="min-h-[520px] rounded-[28px] bg-white" aria-label="Загрузка админ-панели" />}>
           <WhereToTrainApp adminMode />
         </Suspense>

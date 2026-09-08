@@ -15,7 +15,7 @@ export default function ContactsPage() {
         <div className="site-container grid gap-5 md:grid-cols-2 xl:grid-cols-3">
           <ContactCard icon={Phone} title="Телефон" value={siteSettings.contacts.phone} href={`tel:${siteSettings.contacts.phone.replace(/[\s()-]/g, "")}`} />
           <ContactCard icon={Mail} title="Электронная почта" value={siteSettings.contacts.email} href={`mailto:${siteSettings.contacts.email}`} />
-          <ContactCard icon={MapPin} title="Адрес" value={verificationRequired.address ?? "Информация уточняется"} />
+          <ContactCard icon={MapPin} title="Адрес · открыть Яндекс Карты" value={verificationRequired.address} href={verificationRequired.addressMapUrl} />
           <ContactCard icon={MessageCircle} title="ВКонтакте" value="Официальное сообщество" href={siteSettings.social.vk} />
           <ContactCard icon={Send} title="Telegram" value="Официальный канал" href={siteSettings.social.telegram} />
         </div>

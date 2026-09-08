@@ -32,11 +32,15 @@ import { getSupabaseClient } from "@/lib/supabase";
 import {
   ORGANIZATION_TYPE_LABELS,
   ORGANIZATION_TYPES,
+  TRAINING_CITY_SELECT,
   TRAINING_CITY_TABLE,
+  TRAINING_ORGANIZATION_SELECT,
   TRAINING_ORGANIZATION_TABLE,
   TERRITORY_TYPE_LABELS,
   TERRITORY_TYPES,
   fetchTrainingData,
+  fromTrainingCityRow,
+  fromTrainingOrganizationRow,
   getActiveOrganizationsForCity,
   getVisibleTrainingCities,
   isSupabaseConfigured,
@@ -81,6 +85,21 @@ const ghostButton = `${styles.button} ${styles.buttonGhost}`;
 
 function cleanText(value: string | undefined): string {
   return value?.trim() ?? "";
+}
+
+function saveErrorMessage(error: { code?: string; message?: string } | null): string | null {
+  if (!error) return null;
+  const message = error.message || "Ошибка Supabase";
+  if (error.code === "PGRST204" || error.code === "42703" || message.toLowerCase().includes("schema cache")) {
+    return "Структура Supabase не обновлена. Выполните миграцию docs/where-to-train-form-fields-migration.sql и повторите сохранение.";
+  }
+  return message;
+}
+
+function errorMessage(error: unknown, fallback: string): string {
+  if (error instanceof Error && error.message) return error.message;
+  if (error && typeof error === "object" && "message" in error && typeof error.message === "string") return error.message;
+  return fallback;
 }
 
 function clampPercent(value: number): number {
@@ -178,10 +197,12 @@ export function WhereToTrainApp({ adminMode = false }: { adminMode?: boolean }) 
   const [organizationDraft, setOrganizationDraft] = useState<TrainingOrganization | null>(null);
   const [formError, setFormError] = useState("");
   const [saveMessage, setSaveMessage] = useState("");
+  const [saving, setSaving] = useState(false);
 
   const organizationRefs = useRef<Record<string, HTMLDivElement | null>>({});
   const saveTimer = useRef<number | null>(null);
   const highlightTimer = useRef<number | null>(null);
+  const reloadTimer = useRef<number | null>(null);
 
   const visibleCities = useMemo(() => getVisibleTrainingCities(data), [data]);
   const selectedCity = useMemo(
@@ -207,12 +228,20 @@ export function WhereToTrainApp({ adminMode = false }: { adminMode?: boolean }) 
       const next = await fetchTrainingData();
       setData(next);
     } catch (error) {
-      setLoadError(error instanceof Error ? error.message : "Не удалось загрузить организации");
+      setLoadError(errorMessage(error, "Не удалось загрузить организации"));
       setData({ cities: [], organizations: [] });
     } finally {
       setLoading(false);
     }
   }, []);
+
+  const scheduleReload = useCallback(() => {
+    if (reloadTimer.current) window.clearTimeout(reloadTimer.current);
+    reloadTimer.current = window.setTimeout(() => {
+      reloadTimer.current = null;
+      void loadData();
+    }, 120);
+  }, [loadData]);
 
   const refreshEditor = useCallback(async () => {
     if (!supabase) {
@@ -270,16 +299,15 @@ export function WhereToTrainApp({ adminMode = false }: { adminMode?: boolean }) 
     if (!supabase) return;
     const { data: authSub } = supabase.auth.onAuthStateChange(() => {
       void refreshEditor();
-      void loadData();
     });
     const channel = supabase
       .channel("frsrk-training-locations")
       .on("postgres_changes", { event: "*", schema: "public", table: TRAINING_CITY_TABLE }, () => {
-        void loadData();
+        scheduleReload();
         flashSave("Данные обновлены");
       })
       .on("postgres_changes", { event: "*", schema: "public", table: TRAINING_ORGANIZATION_TABLE }, () => {
-        void loadData();
+        scheduleReload();
         flashSave("Данные обновлены");
       })
       .subscribe();
@@ -288,7 +316,7 @@ export function WhereToTrainApp({ adminMode = false }: { adminMode?: boolean }) 
       authSub.subscription.unsubscribe();
       void supabase.removeChannel(channel);
     };
-  }, [flashSave, loadData, refreshEditor, supabase]);
+  }, [flashSave, refreshEditor, scheduleReload, supabase]);
 
   useEffect(() => {
     const onKey = (event: globalThis.KeyboardEvent) => {
@@ -324,6 +352,7 @@ export function WhereToTrainApp({ adminMode = false }: { adminMode?: boolean }) 
     return () => {
       if (saveTimer.current) window.clearTimeout(saveTimer.current);
       if (highlightTimer.current) window.clearTimeout(highlightTimer.current);
+      if (reloadTimer.current) window.clearTimeout(reloadTimer.current);
     };
   }, []);
 
@@ -408,34 +437,36 @@ export function WhereToTrainApp({ adminMode = false }: { adminMode?: boolean }) 
     flashSave("Вы вышли");
   }
 
-  async function persistCity(city: TrainingCity) {
-    if (!supabase || !canEdit) return;
-    const { error } = await supabase
+  async function persistCity(city: TrainingCity): Promise<{ city: TrainingCity | null; error: string | null }> {
+    if (!supabase || !canEdit) return { city: null, error: "Нет прав на сохранение." };
+    const { data: row, error } = await supabase
       .from(TRAINING_CITY_TABLE)
-      .upsert(toTrainingCityRow(city) as unknown as TrainingCityRow);
-    flashSave(error ? `Не сохранилось: ${error.message || "ошибка"}` : "Муниципалитет сохранён");
+      .upsert(toTrainingCityRow(city) as unknown as TrainingCityRow)
+      .select(TRAINING_CITY_SELECT)
+      .single();
+    return { city: row ? fromTrainingCityRow(row as TrainingCityRow) : null, error: saveErrorMessage(error) };
   }
 
-  async function persistOrganization(organization: TrainingOrganization) {
-    if (!supabase || !canEdit) return;
-    const { error } = await supabase
+  async function persistOrganization(organization: TrainingOrganization): Promise<{ organization: TrainingOrganization | null; error: string | null }> {
+    if (!supabase || !canEdit) return { organization: null, error: "Нет прав на сохранение." };
+    const { data: row, error } = await supabase
       .from(TRAINING_ORGANIZATION_TABLE)
-      .upsert(toTrainingOrganizationRow(organization) as unknown as TrainingOrganizationRow);
-    flashSave(error ? `Не сохранилось: ${error.message || "ошибка"}` : "Организация сохранена");
+      .upsert(toTrainingOrganizationRow(organization) as unknown as TrainingOrganizationRow)
+      .select(TRAINING_ORGANIZATION_SELECT)
+      .single();
+    return { organization: row ? fromTrainingOrganizationRow(row as TrainingOrganizationRow) : null, error: saveErrorMessage(error) };
   }
 
-  async function persistCityDelete(cityId: string) {
-    if (!supabase || !canEdit) return;
-    const { error: organizationError } = await supabase.from(TRAINING_ORGANIZATION_TABLE).delete().eq("city_id", cityId);
-    const { error: cityError } = await supabase.from(TRAINING_CITY_TABLE).delete().eq("id", cityId);
-    const error = cityError ?? organizationError;
-    flashSave(error ? `Не удалилось: ${error.message || "ошибка"}` : "Муниципалитет удалён");
+  async function persistCityDelete(cityId: string): Promise<string | null> {
+    if (!supabase || !canEdit) return "Нет прав на удаление.";
+    const { error } = await supabase.from(TRAINING_CITY_TABLE).delete().eq("id", cityId);
+    return saveErrorMessage(error);
   }
 
-  async function persistOrganizationDelete(organizationId: string) {
-    if (!supabase || !canEdit) return;
+  async function persistOrganizationDelete(organizationId: string): Promise<string | null> {
+    if (!supabase || !canEdit) return "Нет прав на удаление.";
     const { error } = await supabase.from(TRAINING_ORGANIZATION_TABLE).delete().eq("id", organizationId);
-    flashSave(error ? `Не удалилось: ${error.message || "ошибка"}` : "Организация удалена");
+    return saveErrorMessage(error);
   }
 
   function ensureUniqueSlug(name: string, currentId: string, existingSlug: string) {
@@ -465,8 +496,8 @@ export function WhereToTrainApp({ adminMode = false }: { adminMode?: boolean }) 
     setModal({ kind: "organization", cityId, organizationId });
   }
 
-  function saveCityDraft() {
-    if (!cityDraft) return;
+  async function saveCityDraft() {
+    if (!cityDraft || saving) return;
     const name = cleanText(cityDraft.name);
     if (!name) {
       setFormError("Укажите название муниципалитета.");
@@ -485,16 +516,34 @@ export function WhereToTrainApp({ adminMode = false }: { adminMode?: boolean }) 
       mapY: roundPercent(cityDraft.mapY),
     };
 
-    setData((current) => ({
-      ...current,
-      cities: sortTrainingCities(current.cities.some((city) => city.id === next.id) ? current.cities.map((city) => (city.id === next.id ? next : city)) : [...current.cities, next]),
-    }));
-    setModal(null);
-    void persistCity(next);
+    setSaving(true);
+    setFormError("");
+    try {
+      const result = await persistCity(next);
+      if (result.error) {
+        setFormError(`Не сохранилось: ${result.error}`);
+        return;
+      }
+      if (!result.city) {
+        setFormError("Не сохранилось: Supabase не вернул сохранённую запись.");
+        return;
+      }
+      const savedCity = result.city;
+      setData((current) => ({
+        ...current,
+        cities: sortTrainingCities(current.cities.some((city) => city.id === savedCity.id) ? current.cities.map((city) => (city.id === savedCity.id ? savedCity : city)) : [...current.cities, savedCity]),
+      }));
+      setModal(null);
+      flashSave("Муниципалитет сохранён");
+    } catch (error) {
+      setFormError(`Не сохранилось: ${errorMessage(error, "ошибка соединения")}`);
+    } finally {
+      setSaving(false);
+    }
   }
 
-  function saveOrganizationDraft() {
-    if (!organizationDraft) return;
+  async function saveOrganizationDraft() {
+    if (!organizationDraft || saving) return;
     const name = cleanText(organizationDraft.name);
     if (!name) {
       setFormError("Укажите название организации.");
@@ -527,35 +576,81 @@ export function WhereToTrainApp({ adminMode = false }: { adminMode?: boolean }) 
       description: cleanText(organizationDraft.description),
     };
 
-    setData((current) => ({
-      ...current,
-      organizations: sortTrainingOrganizations(
-        current.organizations.some((organization) => organization.id === next.id)
-          ? current.organizations.map((organization) => (organization.id === next.id ? next : organization))
-          : [...current.organizations, next],
-      ),
-    }));
-    setModal(null);
-    void persistOrganization(next);
+    setSaving(true);
+    setFormError("");
+    try {
+      const result = await persistOrganization(next);
+      if (result.error) {
+        setFormError(`Не сохранилось: ${result.error}`);
+        return;
+      }
+      if (!result.organization) {
+        setFormError("Не сохранилось: Supabase не вернул сохранённую запись.");
+        return;
+      }
+      const savedOrganization = result.organization;
+      setData((current) => ({
+        ...current,
+        organizations: sortTrainingOrganizations(
+          current.organizations.some((organization) => organization.id === savedOrganization.id)
+            ? current.organizations.map((organization) => (organization.id === savedOrganization.id ? savedOrganization : organization))
+            : [...current.organizations, savedOrganization],
+        ),
+      }));
+      setModal(null);
+      flashSave("Организация сохранена");
+    } catch (error) {
+      setFormError(`Не сохранилось: ${errorMessage(error, "ошибка соединения")}`);
+    } finally {
+      setSaving(false);
+    }
   }
 
-  function deleteCity(cityId: string) {
-    setData((current) => ({
-      cities: current.cities.filter((city) => city.id !== cityId),
-      organizations: current.organizations.filter((organization) => organization.cityId !== cityId),
-    }));
-    if (selectedCityId === cityId) closeCity();
-    setModal(null);
-    void persistCityDelete(cityId);
+  async function deleteCity(cityId: string) {
+    if (saving) return;
+    setSaving(true);
+    setFormError("");
+    try {
+      const error = await persistCityDelete(cityId);
+      if (error) {
+        setFormError(`Не удалилось: ${error}`);
+        return;
+      }
+      setData((current) => ({
+        cities: current.cities.filter((city) => city.id !== cityId),
+        organizations: current.organizations.filter((organization) => organization.cityId !== cityId),
+      }));
+      if (selectedCityId === cityId) closeCity();
+      setModal(null);
+      flashSave("Муниципалитет удалён");
+    } catch (error) {
+      setFormError(`Не удалилось: ${errorMessage(error, "ошибка соединения")}`);
+    } finally {
+      setSaving(false);
+    }
   }
 
-  function deleteOrganization(organizationId: string) {
-    setData((current) => ({
-      ...current,
-      organizations: current.organizations.filter((organization) => organization.id !== organizationId),
-    }));
-    setModal(null);
-    void persistOrganizationDelete(organizationId);
+  async function deleteOrganization(organizationId: string) {
+    if (saving) return;
+    setSaving(true);
+    setFormError("");
+    try {
+      const error = await persistOrganizationDelete(organizationId);
+      if (error) {
+        setFormError(`Не удалилось: ${error}`);
+        return;
+      }
+      setData((current) => ({
+        ...current,
+        organizations: current.organizations.filter((organization) => organization.id !== organizationId),
+      }));
+      setModal(null);
+      flashSave("Организация удалена");
+    } catch (error) {
+      setFormError(`Не удалилось: ${errorMessage(error, "ошибка соединения")}`);
+    } finally {
+      setSaving(false);
+    }
   }
 
   function chooseResult(result: SearchResult) {
@@ -583,7 +678,7 @@ export function WhereToTrainApp({ adminMode = false }: { adminMode?: boolean }) 
     setDragStart(null);
   }
 
-  if (loading) return <TrainingSkeleton />;
+  if (loading && adminMode) return <TrainingSkeleton />;
 
   if (adminMode) {
     return (
@@ -673,11 +768,12 @@ export function WhereToTrainApp({ adminMode = false }: { adminMode?: boolean }) 
             cities={visibleCities}
             selectedCityId={selectedCityId}
             onSelect={openCity}
+            loading={loading}
           />
-          {!visibleCities.length ? (
+          {!loading && !loadError && !visibleCities.length ? (
             <div className={styles.noMarkers}>
-              <b>Организации пока не опубликованы</b>
-              <span>После добавления активной организации муниципалитет появится на карте автоматически.</span>
+              <b>Муниципалитеты пока не опубликованы</b>
+              <span>Активные города и районы появятся здесь после сохранения в Supabase.</span>
             </div>
           ) : null}
         </section>
@@ -696,6 +792,14 @@ export function WhereToTrainApp({ adminMode = false }: { adminMode?: boolean }) 
           </aside>
         ) : null}
       </div>
+
+      <TerritoryList
+        cities={visibleCities}
+        organizations={data.organizations}
+        loading={loading}
+        loadError={loadError}
+        onSelect={openCity}
+      />
 
       {selectedCity ? (
         <div className={`${styles.mobileSheet} ${sheetExpanded ? styles.mobileSheetExpanded : ""}`}>
@@ -828,7 +932,7 @@ export function WhereToTrainApp({ adminMode = false }: { adminMode?: boolean }) 
                         <button type="button" className={styles.iconButton} onClick={() => openOrganizationForm(city.id, null)} aria-label={`Добавить организацию: ${city.name}`}>
                           <ListPlus size={17} aria-hidden="true" />
                         </button>
-                        <button type="button" className={`${styles.iconButton} ${styles.iconDanger}`} onClick={() => setModal({ kind: "delete-city", cityId: city.id })} aria-label={`Удалить муниципалитет: ${city.name}`}>
+                        <button type="button" className={`${styles.iconButton} ${styles.iconDanger}`} onClick={() => { setFormError(""); setModal({ kind: "delete-city", cityId: city.id }); }} aria-label={`Удалить муниципалитет: ${city.name}`}>
                           <Trash2 size={16} aria-hidden="true" />
                         </button>
                       </div>
@@ -850,7 +954,7 @@ export function WhereToTrainApp({ adminMode = false }: { adminMode?: boolean }) 
                               <button type="button" className={styles.iconButton} onClick={() => openOrganizationForm(city.id, organization.id)} aria-label={`Редактировать организацию: ${organization.name}`}>
                                 <Pencil size={16} aria-hidden="true" />
                               </button>
-                              <button type="button" className={`${styles.iconButton} ${styles.iconDanger}`} onClick={() => setModal({ kind: "delete-organization", organizationId: organization.id })} aria-label={`Удалить организацию: ${organization.name}`}>
+                              <button type="button" className={`${styles.iconButton} ${styles.iconDanger}`} onClick={() => { setFormError(""); setModal({ kind: "delete-organization", organizationId: organization.id }); }} aria-label={`Удалить организацию: ${organization.name}`}>
                                 <Trash2 size={16} aria-hidden="true" />
                               </button>
                             </div>
@@ -939,10 +1043,10 @@ export function WhereToTrainApp({ adminMode = false }: { adminMode?: boolean }) 
           </label>
         </div>
         <footer className={styles.modalFooter}>
-          <button type="button" className={publicButton} onClick={() => setModal(null)}>Отмена</button>
-          <button type="button" className={primaryButton} onClick={saveCityDraft}>
+          <button type="button" className={publicButton} onClick={() => setModal(null)} disabled={saving}>Отмена</button>
+          <button type="button" className={primaryButton} onClick={() => void saveCityDraft()} disabled={saving}>
             <Check size={16} aria-hidden="true" />
-            Сохранить
+            {saving ? "Сохраняю..." : "Сохранить"}
           </button>
         </footer>
       </>
@@ -1043,10 +1147,10 @@ export function WhereToTrainApp({ adminMode = false }: { adminMode?: boolean }) 
           </div>
         </div>
         <footer className={styles.modalFooter}>
-          <button type="button" className={publicButton} onClick={() => setModal(null)}>Отмена</button>
-          <button type="button" className={primaryButton} onClick={saveOrganizationDraft}>
+          <button type="button" className={publicButton} onClick={() => setModal(null)} disabled={saving}>Отмена</button>
+          <button type="button" className={primaryButton} onClick={() => void saveOrganizationDraft()} disabled={saving}>
             <Check size={16} aria-hidden="true" />
-            Сохранить
+            {saving ? "Сохраняю..." : "Сохранить"}
           </button>
         </footer>
       </>
@@ -1065,15 +1169,16 @@ export function WhereToTrainApp({ adminMode = false }: { adminMode?: boolean }) 
           </button>
         </header>
         <div className={styles.modalBody}>
+          {formError ? <p className={styles.formError}>{formError}</p> : null}
           <p className={styles.confirmText}>
             {city.name} будет удалён вместе с организациями этого муниципалитета.
           </p>
         </div>
         <footer className={styles.modalFooter}>
-          <button type="button" className={publicButton} onClick={() => setModal(null)}>Отмена</button>
-          <button type="button" className={dangerButton} onClick={() => deleteCity(cityId)}>
+          <button type="button" className={publicButton} onClick={() => setModal(null)} disabled={saving}>Отмена</button>
+          <button type="button" className={dangerButton} onClick={() => void deleteCity(cityId)} disabled={saving}>
             <Trash2 size={16} aria-hidden="true" />
-            Удалить
+            {saving ? "Удаляю..." : "Удалить"}
           </button>
         </footer>
       </>
@@ -1092,13 +1197,14 @@ export function WhereToTrainApp({ adminMode = false }: { adminMode?: boolean }) 
           </button>
         </header>
         <div className={styles.modalBody}>
+          {formError ? <p className={styles.formError}>{formError}</p> : null}
           <p className={styles.confirmText}>{organization.name} исчезнет из списка организаций.</p>
         </div>
         <footer className={styles.modalFooter}>
-          <button type="button" className={publicButton} onClick={() => setModal(null)}>Отмена</button>
-          <button type="button" className={dangerButton} onClick={() => deleteOrganization(organizationId)}>
+          <button type="button" className={publicButton} onClick={() => setModal(null)} disabled={saving}>Отмена</button>
+          <button type="button" className={dangerButton} onClick={() => void deleteOrganization(organizationId)} disabled={saving}>
             <Trash2 size={16} aria-hidden="true" />
-            Удалить
+            {saving ? "Удаляю..." : "Удалить"}
           </button>
         </footer>
       </>
@@ -1118,10 +1224,12 @@ function MapCanvas({
   cities,
   selectedCityId,
   onSelect,
+  loading,
 }: {
   cities: TrainingCity[];
   selectedCityId: string | null;
   onSelect: (city: TrainingCity) => void;
+  loading: boolean;
 }) {
   return (
     <div className={styles.mapFrame}>
@@ -1134,6 +1242,7 @@ function MapCanvas({
         sizes="(max-width: 860px) calc(100vw - 32px), 980px"
         className={styles.mapImage}
       />
+      {loading ? <div className={styles.mapLoading} role="status">Загружаем муниципалитеты…</div> : null}
       {cities.map((city) => {
         const selected = city.id === selectedCityId;
         return (
@@ -1151,6 +1260,52 @@ function MapCanvas({
         );
       })}
     </div>
+  );
+}
+
+function TerritoryList({
+  cities,
+  organizations,
+  loading,
+  loadError,
+  onSelect,
+}: {
+  cities: TrainingCity[];
+  organizations: TrainingOrganization[];
+  loading: boolean;
+  loadError: string;
+  onSelect: (city: TrainingCity) => void;
+}) {
+  const organizationCounts = new Map<string, number>();
+  for (const organization of organizations) {
+    if (organization.active) organizationCounts.set(organization.cityId, (organizationCounts.get(organization.cityId) ?? 0) + 1);
+  }
+
+  return (
+    <section className={styles.territorySection} aria-labelledby="territory-list-title">
+      <div className={styles.territoryHeading}>
+        <p>Территории</p>
+        <h2 id="territory-list-title">Города и районы</h2>
+      </div>
+      {loading ? <p className={styles.territoryStatus} role="status">Загружаем список из Supabase…</p> : null}
+      {!loading && !loadError && cities.length ? (
+        <div className={styles.territoryGrid}>
+          {cities.map((city) => {
+            const organizationsCount = organizationCounts.get(city.id) ?? 0;
+            return (
+              <button key={city.id} type="button" className={styles.territoryCard} onClick={() => onSelect(city)}>
+                <span className={styles.territoryIcon}><MapPin size={19} aria-hidden="true" /></span>
+                <span className={styles.territoryCopy}>
+                  <b>{city.name}</b>
+                  <small>{TERRITORY_TYPE_LABELS[city.territoryType]} · {organizationsCount} {organizationsCount === 1 ? "организация" : organizationsCount >= 2 && organizationsCount <= 4 ? "организации" : "организаций"}</small>
+                </span>
+                <span className={styles.territoryAction}>Открыть</span>
+              </button>
+            );
+          })}
+        </div>
+      ) : null}
+    </section>
   );
 }
 

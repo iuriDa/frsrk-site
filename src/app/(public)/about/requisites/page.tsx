@@ -22,7 +22,7 @@ export default function RequisitesPage() {
               <Row label="Полное наименование" value={verificationRequired.officialName} />
               <Row label="Сокращённое наименование" value={verificationRequired.legalShortName ?? ""} />
               <Row label="ОГРН" value={verificationRequired.ogrn} />
-              <Row label="Юридический адрес" value={verificationRequired.address ?? ""} />
+              <Row label="Юридический адрес" value={verificationRequired.address} href={verificationRequired.addressMapUrl} />
             </dl>
           </div>
 
@@ -55,11 +55,11 @@ export default function RequisitesPage() {
   );
 }
 
-function Row({ label, value }: { label: string; value: string }) {
+function Row({ label, value, href }: { label: string; value: string; href?: string }) {
   return (
     <div className="sm:flex sm:gap-4">
       <dt className="shrink-0 font-bold text-[var(--navy-950)] sm:w-52">{label}</dt>
-      <dd className="text-[var(--text-muted)] break-all">{value}</dd>
+      <dd className="text-[var(--text-muted)] break-all">{href ? <a href={href} target="_blank" rel="noopener noreferrer" className="underline underline-offset-4 hover:text-[var(--blue-700)]">{value}</a> : value}</dd>
     </div>
   );
 }

@@ -1,9 +1,7 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
-import { MunicipalityExplorer } from "@/components/municipalities/municipality-explorer";
 import { PageHero } from "@/components/ui/page-hero";
 import { WhereToTrainApp } from "@/components/where-to-train/where-to-train-app";
-import { municipalities } from "@/content/municipalities";
 
 export const metadata: Metadata = { title: "Муниципалитеты" };
 
@@ -34,7 +32,6 @@ export default function MunicipalitiesPage() {
               <WhereToTrainApp />
             </Suspense>
           </section>
-          <MunicipalityExplorer items={municipalities} />
         </div>
       </section>
     </>

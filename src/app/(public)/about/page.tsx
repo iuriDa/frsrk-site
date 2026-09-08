@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { Award, Calendar, MapPin, Shield, Trophy, Users } from "lucide-react";
+import { Award, Calendar, Download, FileText, MapPin, Shield, Trophy, Users } from "lucide-react";
 import { PageHero } from "@/components/ui/page-hero";
 import { verificationRequired } from "@/content/verification-required";
 
@@ -23,6 +23,23 @@ export default function AboutPage() {
         <div className="site-container">
           <div className="grid gap-6 lg:grid-cols-3">
             <div className="lg:col-span-2 space-y-6">
+              <div className="ui-card flex flex-col gap-5 p-6 sm:flex-row sm:items-center sm:justify-between md:p-7">
+                <div className="flex min-w-0 items-start gap-4">
+                  <span className="grid size-12 shrink-0 place-items-center rounded-xl bg-[#eaf2fb] text-[var(--blue-700)]">
+                    <FileText size={24} aria-hidden="true" />
+                  </span>
+                  <div className="min-w-0">
+                    <p className="text-sm font-semibold text-[var(--text-muted)]">Учредительный документ</p>
+                    <h2 className="mt-1 text-xl font-black tracking-[-0.025em] text-[var(--navy-950)]">Устав ОО ФРСРК</h2>
+                    <p className="mt-2 text-sm leading-6 text-[var(--text-muted)]">Устав Общественной организации «Федерация роуп скиппинга (спортивной скакалки) Республики Крым».</p>
+                  </div>
+                </div>
+                <a href="/documents/ustav-oo-frsrk.pdf" download className="inline-flex min-h-11 shrink-0 items-center justify-center gap-2 rounded-[var(--radius-btn)] bg-[var(--blue-700)] px-5 text-sm font-extrabold text-white transition hover:bg-[var(--navy-800)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--blue-500)]">
+                  <Download size={17} aria-hidden="true" />
+                  Скачать PDF · 3,4 МБ
+                </a>
+              </div>
+
               <div className="ui-card p-6 md:p-7">
                 <h2 className="heading-section">Общие сведения</h2>
                 <dl className="mt-6 space-y-4 text-sm leading-7">
@@ -31,7 +48,7 @@ export default function AboutPage() {
                   <InfoRow label="ОГРН" value={verificationRequired.ogrn} />
                   <InfoRow label="Вид спорта" value="Роуп скиппинг (спортивная скакалка)" />
                   <InfoRow label="Территория деятельности" value="Республика Крым" />
-                  <InfoRow label="Юридический адрес" value={verificationRequired.address ?? ""} />
+                  <InfoRow label="Юридический адрес" value={verificationRequired.address} href={verificationRequired.addressMapUrl} />
                   <InfoRow label="Email" value={verificationRequired.email ?? ""} />
                   <InfoRow label="Телефон" value={verificationRequired.phone ?? ""} />
                 </dl>
@@ -98,11 +115,11 @@ export default function AboutPage() {
   );
 }
 
-function InfoRow({ label, value }: { label: string; value: string }) {
+function InfoRow({ label, value, href }: { label: string; value: string; href?: string }) {
   return (
     <div className="sm:flex sm:gap-4">
       <dt className="shrink-0 font-bold text-[var(--navy-950)] sm:w-56">{label}</dt>
-      <dd className="text-[var(--text-muted)]">{value}</dd>
+      <dd className="text-[var(--text-muted)]">{href ? <a href={href} target="_blank" rel="noopener noreferrer" className="underline underline-offset-4 hover:text-[var(--blue-700)]">{value}</a> : value}</dd>
     </div>
   );
 }

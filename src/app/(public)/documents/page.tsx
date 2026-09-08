@@ -6,10 +6,13 @@ import {
   documentCategories,
   documentStatusClasses,
   documentStatusLabels,
-  federationDocuments,
   type DocumentCategory,
   type FederationDocument,
 } from "@/content/documents";
+
+import { documentDownloadUrl, readDocumentCatalog } from "@/lib/document-store";
+
+export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
   title: "Документы",
@@ -24,9 +27,10 @@ const categoryIcons: Record<DocumentCategory, typeof FileText> = {
   "sudejstvo": BookOpen,
 };
 
-const fileTypeLabels: Record<string, string> = { pdf: "PDF", docx: "DOCX", xls: "XLS" };
+const fileTypeLabels: Record<string, string> = { pdf: "PDF", docx: "DOCX", xls: "XLS", xlsx: "XLSX" };
 
-export default function DocumentsPage() {
+export default async function DocumentsPage() {
+  const { documents } = await readDocumentCatalog();
   return (
     <>
       <PageHero
@@ -54,11 +58,15 @@ export default function DocumentsPage() {
             </Link>
           </div>
 
+          <div className="mt-6 flex justify-end">
+            <Link href="/admin/documents" className="inline-flex min-h-11 items-center text-sm font-semibold text-[var(--blue-700)] hover:underline">Управление документами →</Link>
+          </div>
+
           {/* Три категории документов */}
           <div className="mt-8 grid gap-5 md:grid-cols-2 lg:grid-cols-3">
             {categoryOrder.map((catKey) => {
               const cat = documentCategories[catKey];
-              const docs = federationDocuments.filter((d) => d.category === catKey);
+              const docs = documents.filter((d) => d.category === catKey);
               const Icon = categoryIcons[catKey];
 
               return (
@@ -93,7 +101,7 @@ export default function DocumentsPage() {
 }
 
 function DocumentRow({ doc }: { doc: FederationDocument }) {
-  const FileIcon = doc.fileType === "xls" ? FileSpreadsheet : FileText;
+  const FileIcon = (doc.fileType === "xls" || doc.fileType === "xlsx") ? FileSpreadsheet : FileText;
   const status = doc.status ?? "current";
 
   return (
@@ -117,7 +125,7 @@ function DocumentRow({ doc }: { doc: FederationDocument }) {
         </div>
       </div>
       <a
-        href={doc.fileUrl}
+        href={documentDownloadUrl(doc.id)}
         download
         className="mt-3 inline-flex items-center gap-2 rounded-xl border border-[var(--border)] bg-[var(--surface-muted)] px-3.5 py-2 text-xs font-bold text-[var(--navy-950)] transition hover:border-[var(--blue-500)] hover:text-[var(--blue-700)]"
       >

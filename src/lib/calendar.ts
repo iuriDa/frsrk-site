@@ -17,7 +17,7 @@ export interface CalendarCategoryMeta {
 
 export const CATEGORIES: Record<CalendarCategory, CalendarCategoryMeta> = {
   vs: { name: "Всероссийские", color: "#0a6cff" },
-  mr: { name: "Межрегиональные (ЮФО)", color: "#8e44d0" },
+  mr: { name: "Межрегиональные", color: "#8e44d0" },
   reg: { name: "Региональные", color: "#1a9c4c" },
   fest: { name: "Фестивали и массовые", color: "#0f9aa8" },
   edu: { name: "Учебно-методические", color: "#e08400" },

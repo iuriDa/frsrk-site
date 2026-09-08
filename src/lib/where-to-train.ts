@@ -3,6 +3,10 @@ import { getSupabaseClient, isSupabaseConfigured } from "@/lib/supabase";
 export const TRAINING_CITY_TABLE = "training_cities";
 export const TRAINING_ORGANIZATION_TABLE = "training_organizations";
 
+export const TRAINING_CITY_SELECT = "id,slug,name,territory_type,map_x,map_y,responsible_name,responsible_role,active,sort_order";
+export const TRAINING_ORGANIZATION_SELECT = "id,city_id,name,organization_type,organization_type_other,address,phone,phone_secondary,max_url,website,vk,telegram,coach_name,description,active,sort_order";
+const TRAINING_DATA_SELECT = `${TRAINING_CITY_SELECT},organizations:${TRAINING_ORGANIZATION_TABLE}(${TRAINING_ORGANIZATION_SELECT})`;
+
 export const TERRITORY_TYPES = ["city", "district"] as const;
 export type TerritoryType = (typeof TERRITORY_TYPES)[number];
 
@@ -107,6 +111,10 @@ export interface TrainingOrganizationRow {
   updated_at?: string;
 }
 
+interface TrainingDataRow extends TrainingCityRow {
+  organizations: TrainingOrganizationRow[] | null;
+}
+
 const CYRILLIC_TO_LATIN: Record<string, string> = {
   а: "a",
   б: "b",
@@ -179,9 +187,7 @@ export function getActiveOrganizationsForCity(cityId: string, organizations: Tra
 }
 
 export function getVisibleTrainingCities(data: TrainingData): TrainingCity[] {
-  return sortTrainingCities(
-    data.cities.filter((city) => city.active && data.organizations.some((organization) => organization.cityId === city.id && organization.active)),
-  );
+  return sortTrainingCities(data.cities.filter((city) => city.active));
 }
 
 export function fromTrainingCityRow(row: TrainingCityRow): TrainingCity {
@@ -264,19 +270,20 @@ export function toTrainingOrganizationRow(organization: TrainingOrganization): T
 
 export async function fetchTrainingData(): Promise<TrainingData> {
   const supabase = getSupabaseClient();
-  if (!supabase) return { cities: [], organizations: [] };
+  if (!supabase) {
+    throw new Error("Supabase не настроен: проверьте публичный URL и publishable key.");
+  }
 
-  const [{ data: cityRows, error: cityError }, { data: organizationRows, error: organizationError }] = await Promise.all([
-    supabase.from(TRAINING_CITY_TABLE).select("*"),
-    supabase.from(TRAINING_ORGANIZATION_TABLE).select("*"),
-  ]);
+  const { data, error } = await supabase
+    .from(TRAINING_CITY_TABLE)
+    .select(TRAINING_DATA_SELECT);
 
-  if (cityError) throw cityError;
-  if (organizationError) throw organizationError;
+  if (error) throw error;
+  const rows = (data ?? []) as unknown as TrainingDataRow[];
 
   return {
-    cities: sortTrainingCities(((cityRows ?? []) as TrainingCityRow[]).map(fromTrainingCityRow)),
-    organizations: sortTrainingOrganizations(((organizationRows ?? []) as TrainingOrganizationRow[]).map(fromTrainingOrganizationRow)),
+    cities: sortTrainingCities(rows.map(fromTrainingCityRow)),
+    organizations: sortTrainingOrganizations(rows.flatMap((row) => row.organizations ?? []).map(fromTrainingOrganizationRow)),
   };
 }
 

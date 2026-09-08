@@ -9,7 +9,7 @@ export interface FederationDocument {
   documentNumber?: string;
   documentDate?: string;
   fileUrl: string;
-  fileType: "pdf" | "docx" | "xls";
+  fileType: "pdf" | "docx" | "xls" | "xlsx";
   fileSize: string;
   pages?: number;
   /** Статус актуальности документа. По умолчанию считается «current». */
@@ -28,6 +28,8 @@ export interface FederationDocument {
   officialUrl?: string;
   /** Дата последней проверки актуальности (ISO). */
   lastVerifiedAt?: string;
+  /** Имя файла в серверном хранилище; никогда не принимается от клиента. */
+  storedFile?: string;
 }
 
 export const documentStatusLabels: Record<DocumentStatus, string> = {
@@ -113,9 +115,40 @@ export const federationDocuments: FederationDocument[] = [
     fileSize: "109 КБ",
   },
   {
+    id: "polozhenie-evsk-173-2025",
+    title: "Положение о Единой всероссийской спортивной классификации",
+    description: "Порядок присвоения, подтверждения, лишения и восстановления спортивных званий и разрядов. Исходная редакция приказа от 03.03.2025: файл не включает последующие изменения, в том числе приказ № 510 от 09.07.2025.",
+    category: "standarty",
+    source: "Министерство спорта Российской Федерации",
+    documentNumber: "№173",
+    documentDate: "03.03.2025",
+    fileUrl: "/documents/polozhenie-evsk-173-2025.pdf",
+    localFile: "/documents/polozhenie-evsk-173-2025.pdf",
+    fileType: "pdf",
+    fileSize: "4,2 МБ",
+    pages: 61,
+    status: "archived",
+    edition: "03.03.2025, без последующих изменений",
+  },
+  {
+    id: "evsk-299-2026",
+    title: "ЕВСК: требования по роуп скиппингу — 2026",
+    description: "Приложение № 59 к приказу Минспорта России № 299 от 09.04.2026. Требования и условия выполнения для КМС, I–III спортивных и юношеских разрядов. Актуальность сверяется с официальной публикацией.",
+    category: "standarty",
+    source: "Министерство спорта Российской Федерации",
+    documentNumber: "№299",
+    documentDate: "09.04.2026",
+    fileUrl: "/documents/evsk-299-2026.xls",
+    localFile: "/documents/evsk-299-2026.xls",
+    fileType: "xls",
+    fileSize: "77 КБ",
+    edition: "2026",
+    status: "requiresVerification",
+  },
+  {
     id: "evsk-2022-2025",
     title: "Единая всероссийская спортивная классификация (ЕВСК) 2022–2025",
-    description: "Нормативы и требования для присвоения спортивных разрядов и званий по роуп скиппингу: от юношеских разрядов до мастера спорта. Архивная редакция на период 2022–2025 — оставлена для справки, актуальная редакция требует проверки.",
+    description: "Требования для присвоения спортивных разрядов по роуп скиппингу. Архивная редакция 2022–2025 оставлена для справки; таблица по приказу № 299 от 09.04.2026 размещена отдельно.",
     category: "standarty",
     source: "Министерство спорта Российской Федерации",
     fileUrl: "/documents/evsk-2022-2025.xls",

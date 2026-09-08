@@ -2,6 +2,9 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { BookOpen, Clock, Download, FileText, Scale, Shield, Timer, Trophy, Users } from "lucide-react";
 import { PageHero } from "@/components/ui/page-hero";
+import { documentDownloadUrl, readDocumentCatalog } from "@/lib/document-store";
+
+export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
   title: "Правила вида спорта",
@@ -50,7 +53,9 @@ const ruleSections = [
   { icon: Shield, title: "Штрафы и дисквалификация", anchor: "penalties", desc: "Фальстарт, нарушение пространства, поведение участников" },
 ];
 
-export default function RulesPage() {
+export default async function RulesPage() {
+  const { documents } = await readDocumentCatalog();
+  const rulesFile = documents.find((document) => document.id === "pravila-vida-sporta");
   return (
     <>
       <PageHero
@@ -276,7 +281,7 @@ export default function RulesPage() {
           <div className="mt-8 rounded-2xl border border-[var(--border)] bg-[var(--surface-muted)] p-6 text-center">
             <p className="text-sm text-[var(--text-muted)]">Полный текст правил утверждён приказом Минспорта России №264 от 29.03.2022</p>
             <div className="mt-3 flex flex-wrap items-center justify-center gap-4">
-              <a href="/documents/pravila-vida-sporta-2024.pdf" download className="inline-flex items-center gap-2 rounded-xl bg-[var(--navy-900)] px-5 py-2.5 text-sm font-bold text-white transition hover:bg-[var(--navy-800)]"><Download size={16} aria-hidden="true" />Скачать PDF · 3 МБ</a>
+              {rulesFile ? <a href={documentDownloadUrl(rulesFile.id)} download className="inline-flex items-center gap-2 rounded-xl bg-[var(--navy-900)] px-5 py-2.5 text-sm font-bold text-white transition hover:bg-[var(--navy-800)]"><Download size={16} aria-hidden="true" />Скачать {rulesFile.fileType.toUpperCase()} · {rulesFile.fileSize}</a> : <p className="text-sm text-[var(--text-muted)]">Файл правил временно недоступен.</p>}
               <Link href="/documents" className="inline-flex text-sm font-bold text-[var(--blue-700)] hover:underline">Все документы →</Link>
             </div>
           </div>

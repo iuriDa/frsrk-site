@@ -103,6 +103,8 @@ export function CalendarApp({ adminMode = false }: { adminMode?: boolean }) {
   const [formErr, setFormErr] = useState<{ title: boolean; dates: boolean }>({ title: false, dates: false });
   const [login, setLogin] = useState({ email: "", password: "", err: "", busy: false });
   const [toast, setToast] = useState<{ msg: string; undo?: () => void } | null>(null);
+  const [exportingPdf, setExportingPdf] = useState(false);
+  const [saving, setSaving] = useState(false);
 
   const undoRef = useRef<CalendarEvent[] | null>(null);
   const listRefs = useRef<Record<string, HTMLButtonElement | null>>({});
@@ -214,20 +216,20 @@ export function CalendarApp({ adminMode = false }: { adminMode?: boolean }) {
 
   const applyLocal = (next: CalendarEvent[]) => setEvents(sortEvents(next));
 
-  async function persistInsert(e: CalendarEvent) {
-    if (!sb || !canEdit) return;
+  async function persistInsert(e: CalendarEvent): Promise<string | null> {
+    if (!sb || !canEdit) return "Нет прав на сохранение.";
     const { error } = await sb.from(TABLE).insert(toRow(e) as unknown as CalendarEventRow);
-    flashSave(error ? "Не сохранилось: " + (error.message || "ошибка") : "Сохранено — видно всем");
+    return error ? error.message || "Ошибка Supabase" : null;
   }
-  async function persistUpdate(e: CalendarEvent) {
-    if (!sb || !canEdit) return;
+  async function persistUpdate(e: CalendarEvent): Promise<string | null> {
+    if (!sb || !canEdit) return "Нет прав на сохранение.";
     const { error } = await sb.from(TABLE).update(toRow(e) as unknown as CalendarEventRow).eq("id", e.id);
-    flashSave(error ? "Не сохранилось: " + (error.message || "ошибка") : "Сохранено — видно всем");
+    return error ? error.message || "Ошибка Supabase" : null;
   }
-  async function persistDelete(id: string) {
-    if (!sb || !canEdit) return;
+  async function persistDelete(id: string): Promise<string | null> {
+    if (!sb || !canEdit) return "Нет прав на удаление.";
     const { error } = await sb.from(TABLE).delete().eq("id", id);
-    if (error) flashSave("Не удалилось: " + (error.message || "ошибка"));
+    return error ? error.message || "Ошибка Supabase" : null;
   }
 
   function focusOn(e: CalendarEvent) {
@@ -250,22 +252,65 @@ export function CalendarApp({ adminMode = false }: { adminMode?: boolean }) {
     }
     showToast("Действие отменено");
   }
-  function commitAdd(d: CalendarEvent) {
-    undoRef.current = events.map((e) => ({ ...e }));
+  async function commitAdd(d: CalendarEvent) {
+    if (saving) return;
     const withId = { ...d, id: uid() };
-    applyLocal([...events, withId]); focusOn(withId); setModal(null);
-    persistInsert(withId); showToast("Мероприятие добавлено", undoAction);
+    setSaving(true);
+    try {
+      const error = await persistInsert(withId);
+      if (error) {
+        flashSave(`Не сохранилось: ${error}`);
+        return;
+      }
+      undoRef.current = events.map((e) => ({ ...e }));
+      applyLocal([...events, withId]); focusOn(withId); setModal(null);
+      flashSave("Сохранено — видно всем");
+      showToast("Мероприятие добавлено", undoAction);
+    } catch (error) {
+      flashSave(`Не сохранилось: ${error instanceof Error ? error.message : "ошибка соединения"}`);
+    } finally {
+      setSaving(false);
+    }
   }
-  function commitEdit(d: CalendarEvent) {
-    undoRef.current = events.map((e) => ({ ...e }));
-    applyLocal(events.map((e) => (e.id === d.id ? d : e))); focusOn(d); setModal(null);
-    persistUpdate(d); showToast("Изменения сохранены", undoAction);
+  async function commitEdit(d: CalendarEvent) {
+    if (saving) return;
+    setSaving(true);
+    try {
+      const error = await persistUpdate(d);
+      if (error) {
+        flashSave(`Не сохранилось: ${error}`);
+        return;
+      }
+      undoRef.current = events.map((e) => ({ ...e }));
+      applyLocal(events.map((e) => (e.id === d.id ? d : e))); focusOn(d); setModal(null);
+      flashSave("Сохранено — видно всем");
+      showToast("Изменения сохранены", undoAction);
+    } catch (error) {
+      flashSave(`Не сохранилось: ${error instanceof Error ? error.message : "ошибка соединения"}`);
+    } finally {
+      setSaving(false);
+    }
   }
-  function commitDelete(id: string) {
-    undoRef.current = events.map((e) => ({ ...e }));
-    applyLocal(events.filter((e) => e.id !== id));
-    if (sel === id) setSel(null);
-    setModal(null); persistDelete(id); showToast("Мероприятие удалено", undoAction);
+  async function commitDelete(id: string) {
+    if (saving) return;
+    setSaving(true);
+    try {
+      const error = await persistDelete(id);
+      if (error) {
+        flashSave(`Не удалилось: ${error}`);
+        return;
+      }
+      undoRef.current = events.map((e) => ({ ...e }));
+      applyLocal(events.filter((e) => e.id !== id));
+      if (sel === id) setSel(null);
+      setModal(null);
+      flashSave("Удалено — видно всем");
+      showToast("Мероприятие удалено", undoAction);
+    } catch (error) {
+      flashSave(`Не удалилось: ${error instanceof Error ? error.message : "ошибка соединения"}`);
+    } finally {
+      setSaving(false);
+    }
   }
 
   async function submitLogin() {
@@ -284,22 +329,38 @@ export function CalendarApp({ adminMode = false }: { adminMode?: boolean }) {
     showToast("Вы вышли — календарь в режиме просмотра");
   }
 
-  function exportIcs() {
-    const ie = (s: string) => String(s).replace(/[\\;,]/g, (m) => "\\" + m).replace(/\n/g, "\\n");
-    const L = ["BEGIN:VCALENDAR", "VERSION:2.0", "PRODID:-//FRSRK//Calendar//RU", "CALSCALE:GREGORIAN", "X-WR-CALNAME:Календарный план ФРСРК"];
-    events.filter(shown).forEach((e) => {
-      const s = e.tbd ? `${e.year}-${pad(e.month)}-01` : (e.start as string);
-      const last = e.tbd ? new Date(Date.UTC(e.year, e.month, 0)) : new Date((e.end as string) + "T00:00:00Z");
-      last.setUTCDate(last.getUTCDate() + 1);
-      L.push("BEGIN:VEVENT", `UID:frsrk-${e.id}@frsrk`, "DTSTAMP:20270101T000000Z",
-        `DTSTART;VALUE=DATE:${s.replace(/-/g, "")}`, `DTEND;VALUE=DATE:${isoOf(last).replace(/-/g, "")}`,
-        `SUMMARY:${ie(e.title + (e.tbd ? " (дата уточняется)" : ""))}`, `LOCATION:${ie(e.place)}`,
-        `DESCRIPTION:${ie(e.rank + ". " + e.org + (e.ekp ? ". Входит в ЕКП" : ""))}`, "END:VEVENT");
-    });
-    L.push("END:VCALENDAR");
-    const a = document.createElement("a");
-    a.href = URL.createObjectURL(new Blob([L.join("\r\n")], { type: "text/calendar;charset=utf-8" }));
-    a.download = "kalendar-frsrk.ics"; a.click(); URL.revokeObjectURL(a.href);
+  async function exportPdf() {
+    const list = events.filter((event) => shown(event) && inView(event));
+    if (!list.length || exportingPdf) return;
+    setExportingPdf(true);
+    try {
+      const response = await fetch("/api/calendar/pdf", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          events: list,
+          period: view === "all" ? "Все годы" : String(view),
+          categories: CATEGORY_KEYS.filter((key) => active.has(key)).map((key) => CATEGORIES[key].name),
+        }),
+      });
+      if (!response.ok) {
+        const details = await response.json().catch(() => null) as { error?: string } | null;
+        throw new Error(details?.error || "Не удалось сформировать PDF.");
+      }
+      const url = URL.createObjectURL(await response.blob());
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `kalendar-frsrk-${view === "all" ? "vse-gody" : view}.pdf`;
+      document.body.append(link);
+      link.click();
+      link.remove();
+      window.setTimeout(() => URL.revokeObjectURL(url), 1000);
+      showToast("PDF со списком мероприятий скачан");
+    } catch (error) {
+      showToast(error instanceof Error ? error.message : "Не удалось сформировать PDF.");
+    } finally {
+      setExportingPdf(false);
+    }
   }
 
   function openForm(editingId: string | null, day?: string) {
@@ -326,7 +387,7 @@ export function CalendarApp({ adminMode = false }: { adminMode?: boolean }) {
     }
     setFormErr({ title: badTitle, dates: badDates });
     if (badTitle || badDates) return;
-    if (editingId == null) { commitAdd(clean); return; }
+    if (editingId == null) { void commitAdd(clean); return; }
     const old = events.find((e) => e.id === editingId)!;
     clean.id = editingId;
     const changes = diffEvents(old, clean);
@@ -447,7 +508,7 @@ export function CalendarApp({ adminMode = false }: { adminMode?: boolean }) {
         </div>
         <div className={styles.toolbar}>
           {mayEdit ? <button className={ctrlPrimary} onClick={() => openForm(null)}><CalendarPlus size={15} aria-hidden="true" />Мероприятие</button> : null}
-          <button className={ctrl} onClick={exportIcs}><Download size={15} aria-hidden="true" />Скачать .ics</button>
+          <button className={ctrl} onClick={() => void exportPdf()} disabled={loading || exportingPdf || !!loadError || !events.some((event) => shown(event) && inView(event))} title="PDF со списком выбранных мероприятий"><Download size={15} aria-hidden="true" />{exportingPdf ? "Готовим PDF…" : "Скачать PDF"}</button>
           <button className={ctrl} onClick={() => window.print()}><Printer size={15} aria-hidden="true" />Печать</button>
           {adminMode && isSupabaseConfigured && authed ? <button className={ctrlGhost} onClick={doLogout} title={userLabel}><LogOut size={15} aria-hidden="true" />Выйти</button> : null}
         </div>
@@ -653,8 +714,8 @@ export function CalendarApp({ adminMode = false }: { adminMode?: boolean }) {
           <label className={styles.chk}><input type="checkbox" checked={d.ekp} onChange={(e) => setDraftPatch({ ekp: e.target.checked })} /> Входит в единый календарный план (ЕКП)</label>
         </div>
         <div className={styles.sheetFoot}>
-          <button className={ctrl} onClick={() => setModal(null)}>Отмена</button>
-          <button className={ctrlPrimary} onClick={() => submitForm(editingId)}>{editingId != null ? "Проверить изменения" : "Добавить"}</button>
+          <button className={ctrl} onClick={() => setModal(null)} disabled={saving}>Отмена</button>
+          <button className={ctrlPrimary} onClick={() => submitForm(editingId)} disabled={saving}>{editingId != null ? "Проверить изменения" : saving ? "Сохраняю…" : "Добавить"}</button>
         </div>
       </>
     );
@@ -670,8 +731,8 @@ export function CalendarApp({ adminMode = false }: { adminMode?: boolean }) {
           <ul className={styles.diff}>{state.changes.map((c) => <li key={c.k}><div className="k">{LBL[c.k]}</div><span className={styles.was}>{c.a}</span><span className={styles.now}>{c.b}</span></li>)}</ul>
         </div>
         <div className={styles.sheetFoot}>
-          <button className={`${ctrl} left`} onClick={() => setModal({ kind: "form", editingId: state.editingId })}>Вернуться к правке</button>
-          <button className={ctrlPrimary} onClick={() => draft && commitEdit(draft)}>Подтвердить</button>
+          <button className={`${ctrl} left`} onClick={() => setModal({ kind: "form", editingId: state.editingId })} disabled={saving}>Вернуться к правке</button>
+          <button className={ctrlPrimary} onClick={() => { if (draft) void commitEdit(draft); }} disabled={saving}>{saving ? "Сохраняю…" : "Подтвердить"}</button>
         </div>
       </>
     );
@@ -685,8 +746,8 @@ export function CalendarApp({ adminMode = false }: { adminMode?: boolean }) {
         <header><h3 id="cal-sheet-title">Удалить мероприятие?</h3></header>
         <div className={styles.sheetBody}><p className={styles.note}><b>{e.title}</b><br />{formatEventDates(e, true)} · {e.place}<br /><br />Мероприятие исчезнет из хронологии и календаря. Отменить можно сразу после удаления.</p></div>
         <div className={styles.sheetFoot}>
-          <button className={ctrl} onClick={() => setModal(null)}>Отмена</button>
-          <button className={ctrlDanger} onClick={() => commitDelete(id)}>Удалить</button>
+          <button className={ctrl} onClick={() => setModal(null)} disabled={saving}>Отмена</button>
+          <button className={ctrlDanger} onClick={() => void commitDelete(id)} disabled={saving}>{saving ? "Удаляю…" : "Удалить"}</button>
         </div>
       </>
     );

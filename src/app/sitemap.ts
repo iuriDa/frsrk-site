@@ -1,5 +1,4 @@
 import type { MetadataRoute } from "next";
-import { municipalities } from "@/content/municipalities";
 import { primaryNavigation } from "@/content/navigation";
 import { readableNews } from "@/content/news";
 import { getSiteUrl } from "@/lib/site-url";
@@ -22,7 +21,6 @@ export default function sitemap(): MetadataRoute.Sitemap {
     // полноценный текст (hasArticleText) — иначе внешние VK/Telegram-ссылки
     // считаются основным переходом и в sitemap не включаются.
     ...readableNews.map((article) => `/news/${article.slug}`),
-    ...municipalities.map((item) => `/municipalities/${item.slug}`),
     "/antidoping/check-medicine",
     "/antidoping/certificate",
     "/antidoping/report",

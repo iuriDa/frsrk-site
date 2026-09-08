@@ -1,8 +1,11 @@
+"use client";
+
 import Image from "next/image";
 import Link from "next/link";
-import type { CSSProperties } from "react";
+import { useEffect, useMemo, useState, type CSSProperties } from "react";
 import { ArrowRight, Building2, GraduationCap, School, Sparkles } from "lucide-react";
-import { municipalitiesOverviewStats, municipalitiesTagline, trainingFormats } from "@/content/municipalities-overview";
+import { municipalitiesTagline, trainingFormats } from "@/content/municipalities-overview";
+import { fetchTrainingData, getVisibleTrainingCities, type TrainingData } from "@/lib/where-to-train";
 import styles from "./municipalities-data-story.module.css";
 
 const formatIcons: Record<string, typeof Building2> = {
@@ -15,11 +18,46 @@ const formatIcons: Record<string, typeof Building2> = {
 const RING_GAP_DEG = 3;
 
 export function MunicipalitiesDataStory() {
-  const territories = municipalitiesOverviewStats.find((stat) => stat.id === "territories")!;
-  const schoolLeague = municipalitiesOverviewStats.find((stat) => stat.id === "school-league")!;
-  const formatsStat = municipalitiesOverviewStats.find((stat) => stat.id === "formats")!;
+  const [data, setData] = useState<TrainingData>({ cities: [], organizations: [] });
+  const [loaded, setLoaded] = useState(false);
 
-  const schoolLeagueDeg = (schoolLeague.value / territories.value) * 360;
+  useEffect(() => {
+    let active = true;
+    void fetchTrainingData()
+      .then((next) => {
+        if (!active) return;
+        setData(next);
+        setLoaded(true);
+      })
+      .catch(() => {
+        if (active) setLoaded(false);
+      });
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  const stats = useMemo(() => {
+    const visibleCities = getVisibleTrainingCities(data);
+    const visibleCityIds = new Set(visibleCities.map((city) => city.id));
+    const activeOrganizations = data.organizations.filter(
+      (organization) => organization.active && visibleCityIds.has(organization.cityId),
+    );
+    const schoolCityIds = new Set(
+      activeOrganizations
+        .filter((organization) => organization.organizationType === "school")
+        .map((organization) => organization.cityId),
+    );
+    return {
+      territories: visibleCities.length,
+      schoolTerritories: schoolCityIds.size,
+      formats: new Set(activeOrganizations.map((organization) => organization.organizationType)).size,
+    };
+  }, [data]);
+
+  const value = (count: number) => (loaded ? String(count) : "—");
+
+  const schoolLeagueDeg = stats.territories > 0 ? (stats.schoolTerritories / stats.territories) * 360 : 0;
   const ringStyle = {
     "--ring-blue-end": `${schoolLeagueDeg - RING_GAP_DEG}deg`,
     "--ring-blue-full": `${schoolLeagueDeg}deg`,
@@ -34,9 +72,9 @@ export function MunicipalitiesDataStory() {
             <div className={styles.left}>
               <p className={styles.eyebrow}>География роуп-скиппинга в Крыму</p>
               <p className={styles.bigNumber} data-tone="gold">
-                {territories.value}
+                {value(stats.territories)}
               </p>
-              <p className={styles.numberLabel}>{territories.label}</p>
+              <p className={styles.numberLabel}>муниципальных территорий</p>
               <p className={styles.description}>
                 Роуп скиппинг развивается по всей Республике Крым — в академиях, клубах, студиях и школьных секциях.
               </p>
@@ -61,16 +99,16 @@ export function MunicipalitiesDataStory() {
               <div>
                 <span className={styles.connector} data-tone="blue" aria-hidden="true" />
                 <p className={styles.bigNumber} data-tone="blue">
-                  {schoolLeague.value}
+                  {value(stats.schoolTerritories)}
                 </p>
-                <p className={styles.numberLabel}>{schoolLeague.label}</p>
+                <p className={styles.numberLabel}>территорий со школьными организациями</p>
               </div>
               <div>
                 <span className={styles.connector} data-tone="red" aria-hidden="true" />
                 <p className={styles.bigNumber} data-tone="red">
-                  {formatsStat.value}
+                  {value(stats.formats)}
                 </p>
-                <p className={styles.numberLabel}>{formatsStat.label}</p>
+                <p className={styles.numberLabel}>форматов организаций</p>
               </div>
             </div>
 
