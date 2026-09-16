@@ -68,17 +68,29 @@ export default async function RulesPage() {
       <section className="section-space">
         <div className="site-container">
           <div className="rounded-[28px] border border-[var(--border)] bg-[var(--surface-muted)] p-6 md:p-8">
-            <div className="flex flex-wrap items-start gap-4">
-              <div className="grid size-12 shrink-0 place-items-center rounded-2xl bg-[var(--navy-900)] text-white">
-                <FileText size={22} aria-hidden="true" />
+            <div className="flex flex-col gap-5 sm:flex-row sm:items-center">
+              <div className="flex min-w-0 flex-1 items-start gap-4">
+                <div className="grid size-12 shrink-0 place-items-center rounded-2xl bg-[var(--navy-900)] text-white">
+                  <FileText size={22} aria-hidden="true" />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <p className="text-xs font-bold uppercase tracking-[0.1em] text-[var(--text-muted)]">Приказ Минспорта России</p>
+                  <h2 className="mt-1 text-lg font-black text-[var(--navy-950)]">№264 от 29 марта 2022 г.</h2>
+                  <p className="mt-2 text-sm leading-6 text-[var(--text-muted)]">
+                    Правила разработаны в соответствии с правилами Международной федерации роуп скиппинга (IRSO) и распространяются на все официальные соревнования на территории Российской Федерации.
+                  </p>
+                </div>
               </div>
-              <div className="flex-1">
-                <p className="text-xs font-bold uppercase tracking-[0.1em] text-[var(--text-muted)]">Приказ Минспорта России</p>
-                <h2 className="mt-1 text-lg font-black text-[var(--navy-950)]">№264 от 29 марта 2022 г.</h2>
-                <p className="mt-2 text-sm leading-6 text-[var(--text-muted)]">
-                  Правила разработаны в соответствии с правилами Международной федерации роуп скиппинга (IRSO) и распространяются на все официальные соревнования на территории Российской Федерации.
-                </p>
-              </div>
+              {rulesFile ? (
+                <a
+                  href={documentDownloadUrl(rulesFile.id)}
+                  download
+                  className="inline-flex min-h-11 shrink-0 items-center justify-center gap-2 rounded-xl bg-[var(--navy-900)] px-5 py-2.5 text-sm font-bold text-white transition hover:bg-[var(--navy-800)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--blue-500)]"
+                >
+                  <Download size={17} aria-hidden="true" />
+                  Скачать
+                </a>
+              ) : null}
             </div>
           </div>
 

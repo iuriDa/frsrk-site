@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { ArrowRight, BookOpen, Download, FileSpreadsheet, FileText, Scale } from "lucide-react";
+import { ArrowRight, BookOpen, Download, FileSpreadsheet, FileText, Music, Scale } from "lucide-react";
 import { PageHero } from "@/components/ui/page-hero";
 import {
   documentCategories,
@@ -9,6 +9,7 @@ import {
   type DocumentCategory,
   type FederationDocument,
 } from "@/content/documents";
+import { disciplineAudio } from "@/content/discipline-audio";
 
 import { documentDownloadUrl, readDocumentCatalog } from "@/lib/document-store";
 
@@ -58,8 +59,45 @@ export default async function DocumentsPage() {
             </Link>
           </div>
 
-          <div className="mt-6 flex justify-end">
-            <Link href="/admin/documents" className="inline-flex min-h-11 items-center text-sm font-semibold text-[var(--blue-700)] hover:underline">Управление документами →</Link>
+          {/* Звуковые дорожки дисциплин */}
+          <div className="mt-6 rounded-[var(--radius-card)] border border-[var(--border)] bg-[var(--surface)] p-6 md:p-7">
+            <div className="flex items-start gap-4">
+              <div className="grid size-11 shrink-0 place-items-center rounded-2xl bg-[var(--navy-900)] text-white">
+                <Music size={20} aria-hidden="true" />
+              </div>
+              <div className="min-w-0">
+                <h2 className="text-lg font-black leading-snug text-[var(--navy-950)] md:text-xl">
+                  Звуковые дорожки дисциплин
+                </h2>
+                <p className="mt-2 max-w-3xl text-sm leading-6 text-[var(--text-muted)]">
+                  Официальные музыкальные файлы для проведения соревнований по дисциплинам роуп скиппинга. Скачайте нужную дорожку в формате MP3.
+                </p>
+              </div>
+            </div>
+
+            <ul className="mt-6 grid gap-3 border-t border-[var(--border)] pt-6 sm:grid-cols-2 lg:grid-cols-3">
+              {disciplineAudio.map((track) => (
+                <li key={track.fileUrl}>
+                  <a
+                    href={track.fileUrl}
+                    download
+                    className="group flex h-full items-center gap-3 rounded-2xl border border-[var(--border)] bg-[var(--surface-muted)] px-4 py-3 transition hover:border-[var(--blue-500)]"
+                  >
+                    <span className="grid size-9 shrink-0 place-items-center rounded-xl bg-white text-[var(--blue-700)]">
+                      <Download size={16} aria-hidden="true" />
+                    </span>
+                    <span className="min-w-0 flex-1">
+                      <span className="block truncate text-sm font-bold text-[var(--navy-950)] group-hover:text-[var(--blue-700)]">
+                        {track.title}
+                      </span>
+                      <span className="mt-0.5 block text-[11px] font-semibold uppercase tracking-[0.06em] text-[var(--text-muted)]">
+                        MP3 · {track.fileSize}
+                      </span>
+                    </span>
+                  </a>
+                </li>
+              ))}
+            </ul>
           </div>
 
           {/* Три категории документов */}
